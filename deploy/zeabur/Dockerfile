@@ -36,6 +36,8 @@ COPY apps ./apps
 # Self-hosted: hide the OpenDesign Cloud sign-up callouts (see
 # apps/web/src/utils/cloudPromo.ts). Inlined into the static web export.
 ENV NEXT_PUBLIC_OD_HIDE_CLOUD_PROMO=1
+# Product branding: "AWP+" with "OpenDesign" as the subtitle (apps/web/src/utils/brand.ts).
+ENV NEXT_PUBLIC_OD_BRAND_NAME=AWP+
 RUN pnpm --filter @open-design/daemon build && \
     pnpm --filter @open-design/web build && \
     pnpm --filter @open-design/daemon deploy --legacy --prod /app/deploy/daemon && \

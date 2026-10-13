@@ -1,0 +1,369 @@
+{{define "sign_in.html"}}<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="light dark">
+<title>登入 · AWP+</title>
+<style>
+  /* Tokens follow apps/web/src/styles/tokens.css (neutral greys, brand green, lime marker). */
+  :root {
+    --bg: #f4f4f2;
+    --card: #ffffff;
+    --text-strong: #202020;
+    --text: #494949;
+    --text-muted: #5c5c5c;
+    --border: #e4e4e0;
+    --border-strong: #c9c9c4;
+    --green: #00aa54;
+    --lime: #d9fbb8;
+    --lime-strong: #adf788;
+    --lime-ink: #1e4a00;
+    --btn-bg: #202020;
+    --btn-bg-hover: #3a3a3a;
+    --btn-ink: #fafafa;
+    --row: #ededeb;
+    --wash: rgba(173, 247, 136, .22);
+    --shadow: 0 1px 2px rgba(20, 20, 20, .05), 0 24px 48px -12px rgba(20, 20, 20, .12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #101010;
+      --card: #191919;
+      --text-strong: #f3f3ef;
+      --text: #cfcfca;
+      --text-muted: #a6a6a0;
+      --border: #2b2b29;
+      --border-strong: #454542;
+      --green: #4ade80;
+      --lime: #23401a;
+      --lime-strong: #3d6e22;
+      --lime-ink: #d9fbb8;
+      --btn-bg: #f3f3ef;
+      --btn-bg-hover: #d9d9d4;
+      --btn-ink: #121212;
+      --row: #262624;
+      --wash: rgba(74, 222, 128, .06);
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 24px 48px -12px rgba(0, 0, 0, .55);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background:
+      radial-gradient(60rem 40rem at 15% -10%, var(--wash), transparent 60%),
+      radial-gradient(40rem 30rem at 110% 110%, var(--wash), transparent 60%),
+      var(--bg);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    color: var(--text);
+    font-family: "Albert Sans", "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 1rem;
+    line-height: 1.75;
+    line-break: strict;
+    -webkit-font-smoothing: antialiased;
+    display: grid;
+    grid-template-columns: minmax(0, 30rem);
+    justify-content: center;
+    align-content: center;
+    padding: clamp(24px, 6vh, 64px) 16px;
+  }
+  .shell { min-width: 0; }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: .75rem;
+    margin: 0 0 1.5rem .25rem;
+    color: var(--text-strong);
+  }
+  .brand-text { display: grid; line-height: 1; }
+  .brand-name {
+    font-size: 1.625rem;
+    font-weight: 750;
+    letter-spacing: -.015em;
+  }
+  .brand-plus { color: var(--green); margin-left: .04em; }
+  .brand-sub {
+    margin-top: .3rem;
+    font-size: .75rem;
+    font-weight: 500;
+    letter-spacing: .06em;
+    color: var(--text-muted);
+  }
+  .brand-mark {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: .7rem;
+    background: var(--text-strong);
+    display: grid;
+    place-items: center;
+    flex: none;
+  }
+  .brand-mark::after {
+    content: "";
+    width: .75rem;
+    height: .75rem;
+    border-radius: 50%;
+    background: var(--lime-strong);
+  }
+  main {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 1.5rem;
+    box-shadow: var(--shadow);
+    padding: 2rem 2rem 1.75rem;
+  }
+
+  /* Guest-list illustration: the visitor's row is the highlighted, unchecked one. */
+  .list {
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: .75rem;
+    margin-bottom: 1.75rem;
+    display: grid;
+    gap: .5rem;
+  }
+  .list-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .375rem .625rem;
+    padding: .5rem .625rem;
+    border-radius: .625rem;
+  }
+  .avatar { width: 1.25rem; height: 1.25rem; border-radius: 50%; background: var(--row); flex: none; }
+  .bar { height: .5rem; border-radius: 999px; background: var(--row); flex: 0 1 auto; }
+  .list-row .label { flex: 1 1 auto; min-width: 0; }
+  .list-row .check, .list-row .pending { margin-left: auto; flex: none; }
+  .bar.w1 { width: 62%; }
+  .bar.w2 { width: 48%; }
+  .check {
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: 50%;
+    background: var(--green);
+    display: grid;
+    place-items: center;
+  }
+  .check svg { width: .7rem; height: .7rem; color: var(--card); }
+  .list-row.you { background: var(--lime); }
+  .list-row.you .avatar { background: var(--lime-strong); }
+  .list-row.you .label {
+    font-size: .8125rem;
+    font-weight: 600;
+    color: var(--lime-ink);
+    white-space: nowrap;
+  }
+  .pending {
+    font-size: .75rem;
+    font-weight: 600;
+    color: var(--lime-ink);
+    border: 1.5px dashed currentColor;
+    border-radius: 999px;
+    padding: 0 .5rem;
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+  .list.retry .list-row.you { background: transparent; border: 1.5px dashed var(--border-strong); }
+  .list.retry .list-row.you .avatar { background: var(--row); }
+  .list.retry .label, .list.retry .pending { color: var(--text-muted); }
+
+  h1 {
+    color: var(--text-strong);
+    font-size: clamp(1.375rem, 1.05rem + 1.4vw, 1.875rem);
+    line-height: 1.4;
+    font-weight: 650;
+    letter-spacing: .005em;
+    margin: 0 0 .625rem;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+  }
+  mark {
+    color: inherit;
+    background: linear-gradient(transparent 58%, var(--lime-strong) 58%, var(--lime-strong) 92%, transparent 92%);
+    padding: 0 .1em;
+  }
+  /* Keep a phrase on one line when it fits; break it only when it cannot fit at all. */
+  .nb { display: inline-block; max-width: 100%; }
+  p { margin: 0; }
+  .lead { color: var(--text); text-wrap: pretty; }
+
+  .steps {
+    list-style: none;
+    margin: 1.25rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: .5rem;
+    counter-reset: step;
+  }
+  .steps li {
+    display: grid;
+    grid-template-columns: 1.5rem 1fr;
+    gap: .625rem;
+    align-items: baseline;
+    color: var(--text);
+    font-size: .9375rem;
+    counter-increment: step;
+  }
+  .steps li::before {
+    content: counter(step);
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    border: 1px solid var(--border-strong);
+    color: var(--text-strong);
+    font-size: .75rem;
+    font-weight: 600;
+    display: grid;
+    place-items: center;
+    transform: translateY(.1rem);
+  }
+
+  .actions { display: grid; gap: .625rem; margin-top: 1.75rem; }
+  .actions form { margin: 0; }
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    width: 100%;
+    min-height: 3rem;
+    padding: .5rem 1.25rem;
+    border-radius: .875rem;
+    font: inherit;
+    font-weight: 600;
+    line-height: 1.4;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color .15s ease, border-color .15s ease, transform .08s ease;
+  }
+  .btn svg { width: 1.125rem; height: 1.125rem; flex: none; }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { background: var(--btn-bg); color: var(--btn-ink); border: 1px solid var(--btn-bg); }
+  .btn-primary:hover { background: var(--btn-bg-hover); border-color: var(--btn-bg-hover); }
+  .btn-secondary { background: transparent; color: var(--text-strong); border: 1px solid var(--border-strong); }
+  .btn-secondary:hover { border-color: var(--text-muted); }
+  .btn:focus-visible, .help a:focus-visible {
+    outline: 3px solid var(--green);
+    outline-offset: 3px;
+  }
+
+  .help {
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+    font-size: .875rem;
+    color: var(--text-muted);
+  }
+  .help a {
+    color: var(--text-strong);
+    font-weight: 600;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    border-radius: 4px;
+    overflow-wrap: anywhere;
+  }
+  .meta {
+    margin: 1rem 0 0;
+    text-align: center;
+    font-size: .75rem;
+    color: var(--text-muted);
+    overflow-wrap: anywhere;
+  }
+
+  /* Shared with error.html above this line. Sign-in additions below. */
+  .list-row.slot { border: 1.5px dashed var(--border-strong); background: transparent; }
+  .list-row.slot .avatar { background: transparent; border: 1.5px dashed var(--border-strong); }
+  .list-row.slot .label { font-size: .8125rem; font-weight: 600; color: var(--text-muted); white-space: nowrap; }
+  .caret { display: inline-block; width: 2px; height: 1em; margin-left: 2px; vertical-align: -.15em; background: var(--green); }
+  .btn-google { gap: .75rem; }
+  .g-logo { width: 1.25rem; height: 1.25rem; flex: none; display: grid; place-items: center; border-radius: 50%; background: #fff; }
+  .g-logo svg { width: .95rem; height: .95rem; }
+  /* Latin words have a short x-height: a low marker reads as a link underline, so cover the full word. */
+  mark.latin { background: linear-gradient(transparent 18%, var(--lime-strong) 18%, var(--lime-strong) 88%, transparent 88%); border-radius: .2em; padding: 0 .2em; }
+  .note { margin-top: 1rem; font-size: .875rem; color: var(--text-muted); text-align: center; }
+
+  /* "Starting up" indicator and auto-refresh progress for the 502/503/504 state. */
+  .dots { display: inline-flex; gap: .2rem; margin-left: .15rem; vertical-align: middle; }
+  .dots i { width: .25rem; height: .25rem; border-radius: 50%; background: currentColor; opacity: .5; }
+  .progress {
+    flex-basis: 100%;
+    height: .25rem;
+    border-radius: 999px;
+    background: var(--row);
+    overflow: hidden;
+  }
+  .progress span {
+    display: block;
+    height: 100%;
+    width: 100%;
+    background: var(--green);
+    transform-origin: left center;
+    transform: scaleX(0);
+  }
+  .countdown { margin-top: .75rem; font-size: .875rem; color: var(--text-muted); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    main { animation: rise .5s cubic-bezier(.2, .7, .2, 1) both; }
+    /* Guest list fills in row by row; the visitor's row lands last, unchecked. */
+    .list-row { animation: settle .45s cubic-bezier(.2, .7, .2, 1) both; }
+    .list-row:nth-child(1) { animation-delay: .15s; }
+    .list-row:nth-child(2) { animation-delay: .5s; }
+    .list-row:nth-child(3) { animation-delay: .3s; }
+    .check { animation: tick .35s cubic-bezier(.3, 1.6, .5, 1) both; }
+    .list-row:nth-child(1) .check { animation-delay: .4s; }
+    .list-row:nth-child(3) .check { animation-delay: .55s; }
+    .list-row.you .pending { animation: stamp .4s .85s cubic-bezier(.3, 1.5, .5, 1) both; }
+    .progress span { transition: transform 1s linear; }
+    .caret { animation: caret 1.1s steps(1) infinite; }
+    @keyframes caret { 50% { opacity: 0; } }
+    .dots i { animation: blink 1.2s infinite ease-in-out; }
+    .dots i:nth-child(2) { animation-delay: .2s; }
+    .dots i:nth-child(3) { animation-delay: .4s; }
+    @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+    @keyframes settle { from { opacity: 0; transform: translateY(4px); } }
+    @keyframes tick { from { opacity: 0; transform: scale(.4); } }
+    @keyframes stamp { from { opacity: 0; transform: scale(1.25) rotate(-4deg); } }
+    @keyframes blink { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+  }
+  @media (max-width: 26rem) {
+    main { padding: 1.5rem 1.25rem 1.25rem; border-radius: 1.25rem; }
+    .list { margin-bottom: 1.375rem; }
+  }
+  /* Only reached with enlarged text on narrow screens (e.g. 320px at 200%):
+     drop the decorative list and let headings wrap so the message comes first. */
+  @media (max-width: 15em) {
+    .list { display: none; }
+    main { padding: 1.25rem 1rem 1rem; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="brand" role="img" aria-label="AWP+ OpenDesign"><span class="brand-mark" aria-hidden="true"></span><span class="brand-text" aria-hidden="true"><span class="brand-name">AWP<span class="brand-plus">+</span></span><span class="brand-sub">OpenDesign</span></span></div>
+  <main>
+    <div class="list" aria-hidden="true">
+      <div class="list-row"><span class="avatar"></span><span class="bar w1"></span><span class="check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2 5 8.5l4.5-5"/></svg></span></div>
+      <div class="list-row"><span class="avatar"></span><span class="bar w2"></span><span class="check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2 5 8.5l4.5-5"/></svg></span></div>
+      <div class="list-row slot"><span class="avatar"></span><span class="label">你的帳號<span class="caret"></span></span></div>
+    </div>
+    <h1>登入 <mark class="nb latin">AWP+</mark></h1>
+    <p class="lead">請用已開通的 Google 帳號登入。還沒開通也沒關係，登入後會看到申請方式。</p>
+    <div class="actions">
+      <form method="GET" action="{{.ProxyPrefix}}/start">
+        <input type="hidden" name="rd" value="{{if .Redirect}}{{.Redirect}}{{else}}/{{end}}">
+        <button type="submit" class="btn btn-primary btn-google"><span class="g-logo"><svg viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg></span>使用 Google 帳號登入</button>
+      </form>
+    </div>
+    <p class="help">還沒開通？請寄信給 <a href="mailto:sam@womedge.com">sam@womedge.com</a> 申請。</p>
+  </main>
+  <p class="meta">僅限公司內部使用</p>
+</div>
+</body>
+</html>
+{{end}}

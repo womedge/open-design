@@ -1,0 +1,56 @@
+/* Matches the oauth2-proxy sign-in / error pages (deploy/zeabur/oauth2-proxy). */
+.lockup {
+  display: flex;
+  align-items: center;
+  align-self: stretch;
+  gap: 10px;
+  /* 16px left inset lines the mark up with the nav icons below
+     (.entry-nav-rail__btn padding-left). */
+  padding: 6px 10px 16px 16px;
+  color: var(--text-strong);
+}
+
+.mark {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 9px;
+  background: var(--text-strong);
+  display: grid;
+  place-items: center;
+}
+
+.mark::after {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--green-border);
+}
+
+.text {
+  display: grid;
+  min-width: 0;
+  line-height: 1;
+}
+
+.name {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+}
+
+.plus {
+  color: var(--green);
+  margin-left: 0.04em;
+}
+
+.sub {
+  margin-top: 4px;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  color: var(--text-muted);
+  white-space: nowrap;
+}

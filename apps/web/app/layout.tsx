@@ -12,9 +12,10 @@ import '../src/components/TestCampaignModal.module.css';
 import '../src/components/HoverTouchpointOverlay.module.css';
 import '../src/components/ProductionCampaignBadge.module.css';
 import '../src/components/OnboardingWelcome.module.css';
+import { DOCUMENT_TITLE } from '../src/utils/brand';
 
 export const metadata: Metadata = {
-  title: 'OpenDesign',
+  title: DOCUMENT_TITLE,
   icons: {
     icon: '/app-icon.png',
     apple: '/app-icon.png',

@@ -67,6 +67,7 @@ import { notifyAmrLoginStatusChanged } from './amrLoginPolling';
 import { Icon } from './Icon';
 import { GITHUB_STARS_FALLBACK_LABEL, formatStars, useGithubStars } from './useGithubStars';
 import { PlanWordmark, planBadgeTierForWorkspace } from './PlanWordmark';
+import { BrandLockup } from './BrandLockup';
 import { MarqueeLabel } from './MarqueeLabel';
 import { RemixIcon } from './RemixIcon';
 import { InviteDialog } from './InviteDialog';
@@ -2400,6 +2401,7 @@ export function EntryNavRail({
       aria-hidden={open ? undefined : true}
     >
       <div className="entry-nav-rail__panel">
+      <BrandLockup />
       <div className="entry-nav-rail__group">
 
         {context ? (

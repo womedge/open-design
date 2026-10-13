@@ -2357,6 +2357,7 @@ export const zhTW: Dict = {
   "chat.support.title": "聯絡支援",
   "chat.support.join": "加入",
   "chat.sendFailedRetryAria": "傳送失敗,重試",
+  "chat.sendFailedRunInProgress": "上一則還在進行中",
   "chat.audio.play": "播放",
   "chat.audio.pause": "暫停",
   "chat.audio.download": "下載 {name}",

@@ -3135,6 +3135,7 @@ export interface Dict {
   'chat.support.title': string;
   'chat.support.join': string;
   'chat.sendFailedRetryAria': string;
+  'chat.sendFailedRunInProgress': string;
   'chat.audio.play': string;
   'chat.audio.pause': string;
   'chat.audio.download': string;

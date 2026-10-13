@@ -2261,6 +2261,7 @@ export const ru: Dict = {
   'chat.support.title': 'Связаться с поддержкой',
   'chat.support.join': 'Вступить',
   'chat.sendFailedRetryAria': 'Не отправлено — повторить',
+  'chat.sendFailedRunInProgress': 'Предыдущее сообщение ещё выполняется',
   'chat.audio.play': 'Воспроизвести',
   'chat.audio.pause': 'Пауза',
   'chat.audio.download': 'Скачать {name}',

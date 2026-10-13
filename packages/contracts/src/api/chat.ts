@@ -1419,6 +1419,11 @@ export interface ChatMessage {
    */
   sendFailed?: boolean;
   /**
+   * `sendFailed` 的原因,目前只区分一种:同一会话里上一轮还没结束(HTTP 409
+   * `RUN_IN_PROGRESS`),界面据此在「重试」旁补一句说明。缺省 = 通用失败。
+   */
+  sendFailedReason?: 'run_in_progress';
+  /**
    * 这条消息之后**原地分叉**过一次(点了「新开会话」)。
    *
    * 设计稿第 38 格:分叉不是跳走 —— 上面是老会话说完的话,线以下是新会话,

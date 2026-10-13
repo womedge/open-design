@@ -3508,6 +3508,38 @@ describe('ProjectView conversation run isolation', () => {
     expect(screen.queryByTestId('user-send-failed')).toBeNull();
   });
 
+  it('records run_in_progress on the failed user row only for a RUN_IN_PROGRESS conflict', async () => {
+    conversationAMessages = [];
+    saveMessage.mockImplementation(
+      async (_projectId: string, _conversationId: string, message: ChatMessage) => message,
+    );
+    streamViaDaemon.mockImplementation(
+      async (options: {
+        onRunStatus?: (status: NonNullable<ChatMessage['runStatus']>) => void;
+        handlers: { onError: (error: Error) => void | Promise<void> };
+      }) => {
+        options.onRunStatus?.('failed');
+        await options.handlers.onError(
+          Object.assign(new Error('a run is still active in this conversation'), {
+            code: 'RUN_IN_PROGRESS',
+          }),
+        );
+      },
+    );
+
+    renderProjectView();
+
+    await waitFor(() => expect(screen.getByTestId('active-conversation').textContent).toBe('conv-a'));
+    await waitFor(() => expect(screen.getByTestId('send-message')).toHaveProperty('disabled', false));
+    fireEvent.click(screen.getByTestId('send-message'));
+
+    await waitFor(() => expect(screen.getByTestId('user-send-failed')).toBeTruthy());
+    const persisted = saveMessage.mock.calls.map((call) => call[2] as ChatMessage);
+    expect(persisted).toContainEqual(
+      expect.objectContaining({ role: 'user', sendFailed: true, sendFailedReason: 'run_in_progress' }),
+    );
+  });
+
   /**
    * OPEND-2586 的最后一句:「**再次失败时仍可继续重试**」。
    *

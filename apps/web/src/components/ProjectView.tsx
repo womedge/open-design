@@ -9992,7 +9992,13 @@ export function ProjectView({
                 const next = current.flatMap((message) => {
                   if (message.id === assistantId) return [];
                   if (message.id !== userMsg.id) return [message];
-                  failedUser = { ...message, sendFailed: true };
+                  failedUser = {
+                    ...message,
+                    sendFailed: true,
+                    ...(errorCode === 'RUN_IN_PROGRESS'
+                      ? { sendFailedReason: 'run_in_progress' as const }
+                      : {}),
+                  };
                   return [failedUser];
                 });
                 if (failedUser) persistMessage(failedUser);
@@ -10783,11 +10789,20 @@ export function ProjectView({
       const currentMessage = currentMessages.find((message) => message.id === failedMessage.id);
       if (currentMessage?.role !== 'user' || !currentMessage.sendFailed) return;
 
-      const retryMessage: ChatMessage = { ...currentMessage, sendFailed: undefined };
+      const retryMessage: ChatMessage = {
+        ...currentMessage,
+        sendFailed: undefined,
+        sendFailedReason: undefined,
+      };
+      const failedReason = currentMessage.sendFailedReason;
       function restoreFailedState() {
         updateMessageById(
           retryMessage.id,
-          (message) => ({ ...message, sendFailed: true }),
+          (message) => ({
+            ...message,
+            sendFailed: true,
+            sendFailedReason: failedReason,
+          }),
           true,
         );
       }

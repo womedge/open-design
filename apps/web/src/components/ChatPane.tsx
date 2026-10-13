@@ -6785,6 +6785,11 @@ const UserMessage = memo(UserMessageImpl);
                   <span>{t('chat.record.retry')}</span>
                 </button>
               ) : null}
+              {message.sendFailed && message.sendFailedReason === 'run_in_progress' ? (
+                <span className="user-send-failed-note" data-testid="user-send-failed-note">
+                  {t('chat.sendFailedRunInProgress')}
+                </span>
+              ) : null}
             </div>
           </div>
         ) : null}

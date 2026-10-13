@@ -2261,6 +2261,7 @@ export const ar: Dict = {
   'chat.support.title': 'التواصل مع الدعم',
   'chat.support.join': 'انضمام',
   'chat.sendFailedRetryAria': 'فشل الإرسال — إعادة المحاولة',
+  'chat.sendFailedRunInProgress': 'الرسالة السابقة لا تزال قيد التنفيذ',
   'chat.audio.play': 'تشغيل',
   'chat.audio.pause': 'إيقاف مؤقت',
   'chat.audio.download': 'تنزيل {name}',

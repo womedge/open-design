@@ -2261,6 +2261,7 @@ export const id: Dict = {
   'chat.support.title': 'Hubungi dukungan',
   'chat.support.join': 'Gabung',
   'chat.sendFailedRetryAria': 'Gagal terkirim — coba lagi',
+  'chat.sendFailedRunInProgress': 'Pesan sebelumnya masih berjalan',
   'chat.audio.play': 'Putar',
   'chat.audio.pause': 'Jeda',
   'chat.audio.download': 'Unduh {name}',

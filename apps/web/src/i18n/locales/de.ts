@@ -2261,6 +2261,7 @@ export const de: Dict = {
   'chat.support.title': 'Support kontaktieren',
   'chat.support.join': 'Beitreten',
   'chat.sendFailedRetryAria': 'Senden fehlgeschlagen – erneut versuchen',
+  'chat.sendFailedRunInProgress': 'Die vorherige Nachricht läuft noch',
   'chat.audio.play': 'Abspielen',
   'chat.audio.pause': 'Pause',
   'chat.audio.download': '{name} herunterladen',

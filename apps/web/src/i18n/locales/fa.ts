@@ -2261,6 +2261,7 @@ export const fa: Dict = {
   'chat.support.title': 'تماس با پشتیبانی',
   'chat.support.join': 'پیوستن',
   'chat.sendFailedRetryAria': 'ارسال ناموفق — تلاش دوباره',
+  'chat.sendFailedRunInProgress': 'پیام قبلی هنوز در حال اجراست',
   'chat.audio.play': 'پخش',
   'chat.audio.pause': 'مکث',
   'chat.audio.download': 'دانلود {name}',

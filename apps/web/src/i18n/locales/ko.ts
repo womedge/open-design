@@ -2261,6 +2261,7 @@ export const ko: Dict = {
   'chat.support.title': '지원팀 문의',
   'chat.support.join': '참여',
   'chat.sendFailedRetryAria': '전송 실패 — 다시 시도',
+  'chat.sendFailedRunInProgress': '이전 메시지가 아직 진행 중입니다',
   'chat.audio.play': '재생',
   'chat.audio.pause': '일시정지',
   'chat.audio.download': '{name} 다운로드',

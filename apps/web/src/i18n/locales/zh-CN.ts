@@ -2349,6 +2349,7 @@ export const zhCN: Dict = {
   "chat.support.title": "联系支持",
   "chat.support.join": "加入",
   "chat.sendFailedRetryAria": "发送失败,重试",
+  "chat.sendFailedRunInProgress": "上一条还在进行中",
   "chat.audio.play": "播放",
   "chat.audio.pause": "暂停",
   "chat.audio.download": "下载 {name}",

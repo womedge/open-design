@@ -1071,6 +1071,7 @@
 .msg.user .user-actions {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 4px;
   margin-top: 4px;
   min-height: 30px;
@@ -3806,6 +3807,14 @@ body.od-quick-switcher-open .chat-composer-fixed-layer .composer-att .msg-att-de
 .msg.user .user-keep-btn:hover {
   background: none;
   color: color-mix(in srgb, var(--red) 70%, var(--text-strong));
+}
+/* 「重试」旁边的一句原因(上一轮还在跑)。静音小字,窄屏下在动作行内自己折行。 */
+.msg.user .user-send-failed-note {
+  min-width: 0;
+  font-size: var(--font-size-12);
+  line-height: 1.4;
+  color: var(--chat-message-muted-ink);
+  overflow-wrap: anywhere;
 }
 
 /* ── 已发送图卡的悬停角标(设计稿第 55 格)────────────────────────────

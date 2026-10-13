@@ -39,6 +39,7 @@ import { BuildPreviewToggle } from './design-files/BuildPreviewToggle';
 import { DesignFilesBuildingState } from './design-files/DesignFilesBuildingState';
 import { selectBuildPreviewHtmlEntry } from './auto-open-file';
 import type { RunProgressStep } from '../runtime/run-progress';
+import { HIDE_CLOUD_PROMO } from '../utils/cloudPromo';
 
 type TranslateFn = (key: keyof Dict, vars?: Record<string, string | number>) => string;
 
@@ -1823,6 +1824,7 @@ export function DesignFilesPanel({
                           >
                             {sharingFolder === `publish:${folder.path}` ? 'Sending…' : 'Publish repo'}
                           </button>
+                          {HIDE_CLOUD_PROMO ? null : (
                           <button
                             type="button"
                             className="df-plugin-install"
@@ -1834,6 +1836,7 @@ export function DesignFilesPanel({
                           >
                             {sharingFolder === `contribute:${folder.path}` ? 'Sending…' : 'OpenDesign PR'}
                           </button>
+                          )}
                         </div>
                       ) : null}
                     </div>

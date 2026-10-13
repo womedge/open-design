@@ -29,6 +29,7 @@ import { pluginCategoryLabel } from './categoryLabel';
 import { localizePluginDescription, localizePluginTitle } from './localization';
 import { inferPluginPreview } from './preview';
 import type { PluginUseAction } from './useActions';
+import { HIDE_CLOUD_PROMO } from '../../utils/cloudPromo';
 
 interface Props {
   record: InstalledPluginRecord;
@@ -390,6 +391,7 @@ export function PluginCard({
                 />
                 <span>{sharePendingAction === 'publish-github' ? t('pluginCard.starting') : t('pluginCard.publish')}</span>
               </button>
+              {HIDE_CLOUD_PROMO ? null : (
               <button
                 type="button"
                 className="plugins-home__action plugins-home__action--secondary plugins-home__action--compact"
@@ -406,6 +408,7 @@ export function PluginCard({
                 />
                 <span>{sharePendingAction === 'contribute-open-design' ? t('pluginCard.starting') : t('pluginCard.contribute')}</span>
               </button>
+              )}
             </div>
           ) : null}
         </div>

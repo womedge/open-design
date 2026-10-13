@@ -65,6 +65,7 @@ import {
   type SkillInstallErrorCode,
 } from '../services/skill-installation.js';
 import type { RouteDeps } from '../server-context.js';
+import { withZhTwSkill } from '../zh-tw-fill.js';
 import { findRealElementRange, HTML_TAG_PATTERNS } from '@open-design/contracts/runtime/html-injection-points';
 
 export interface RegisterAtomRoutesDeps {
@@ -514,7 +515,7 @@ export function registerStaticResourceRoutes(app: Express, ctx: RegisterStaticRe
       // body via /api/skills/:id when needed (keeps the listing payload small).
       res.json({
         skills: skills.map(({ body, dir: _dir, ...rest }) => ({
-          ...rest,
+          ...withZhTwSkill(rest),
           hasBody: typeof body === 'string' && body.length > 0,
         })),
       });
@@ -535,7 +536,7 @@ export function registerStaticResourceRoutes(app: Express, ctx: RegisterStaticRe
       const skill = findSkillById(skills, req.params.id);
       if (!skill) return res.status(404).json({ error: 'skill not found' });
       const { dir: _dir, ...serializable } = skill;
-      res.json(serializable);
+      res.json(withZhTwSkill(serializable));
     } catch (err: any) {
       res.status(500).json({ error: String(err) });
     }
@@ -550,7 +551,7 @@ export function registerStaticResourceRoutes(app: Express, ctx: RegisterStaticRe
       const templates = await listAllDesignTemplates();
       res.json({
         designTemplates: templates.map(({ body, dir: _dir, ...rest }) => ({
-          ...rest,
+          ...withZhTwSkill(rest),
           hasBody: typeof body === 'string' && body.length > 0,
         })),
       });
@@ -565,7 +566,7 @@ export function registerStaticResourceRoutes(app: Express, ctx: RegisterStaticRe
       const template = findSkillById(templates, req.params.id);
       if (!template) return res.status(404).json({ error: 'design template not found' });
       const { dir: _dir, ...serializable } = template;
-      res.json(serializable);
+      res.json(withZhTwSkill(serializable));
     } catch (err: any) {
       res.status(500).json({ error: String(err) });
     }

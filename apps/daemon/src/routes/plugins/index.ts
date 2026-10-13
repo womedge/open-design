@@ -31,6 +31,7 @@ import type { PluginShareAction } from '../../services/plugin-share-tasks.js';
 import type { AuthorizeProjectRequest } from '../../collab/project-request-authority.js';
 import { workspaceTeamPluginBindingResourceId } from '../../plugins/registry.js';
 import { localPluginRegistryScope } from '../../plugins/local-source.js';
+import { withZhTwManifest, withZhTwManifests } from '../../zh-tw-fill.js';
 import {
   classifyPluginInstallError,
   type PluginInstallErrorCode,
@@ -499,7 +500,7 @@ export function registerPluginRoutes(app: Express, deps: RegisterPluginRoutesDep
     return binding.visibility === 'team'
       || binding.createdByWorkspaceMemberId === authority.workspaceMemberId;
   };
-  app.get('/api/plugins', async (req, res) => { try { const authority = await resolveWorkspaceAuthority(req, res, deps.verifyWorkspaceReadAuthority ?? deps.verifyWorkspaceRequestAuthority); if (authority === undefined) return; const visible = await plugins.listInstalledPlugins(db, authority?.workspaceId ?? null, authority?.workspaceMemberId ?? null); res.json({ plugins: helpers.applyBakedPreviews(visible, helpers.PLUGIN_PREVIEWS_DIR) }); } catch (err) { res.status(500).json({ error: String(err) }); } });
+  app.get('/api/plugins', async (req, res) => { try { const authority = await resolveWorkspaceAuthority(req, res, deps.verifyWorkspaceReadAuthority ?? deps.verifyWorkspaceRequestAuthority); if (authority === undefined) return; const visible = await plugins.listInstalledPlugins(db, authority?.workspaceId ?? null, authority?.workspaceMemberId ?? null); res.json({ plugins: withZhTwManifests(helpers.applyBakedPreviews(visible, helpers.PLUGIN_PREVIEWS_DIR)) }); } catch (err) { res.status(500).json({ error: String(err) }); } });
   // Keep this static route before /api/plugins/:id; Express matches in
   // registration order and would otherwise interpret "stats" as a plugin id.
   app.get('/api/plugins/stats', async (req, res) => {
@@ -518,7 +519,7 @@ export function registerPluginRoutes(app: Express, deps: RegisterPluginRoutesDep
       snapshotVisibleToAuthority(row, authority));
     return helpers.handlePluginStats(res, installed, visibleSnapshots);
   });
-  app.get('/api/plugins/:id', async (req, res) => { try { const authority = await resolveWorkspaceAuthority(req, res); if (authority === undefined) return; const plugin = await resolveRequestPlugin(req.params.id, authority); if (!plugin) return res.status(404).json({ error: 'plugin not found' }); res.json(plugin); } catch (err) { res.status(500).json({ error: String(err) }); } });
+  app.get('/api/plugins/:id', async (req, res) => { try { const authority = await resolveWorkspaceAuthority(req, res); if (authority === undefined) return; const plugin = await resolveRequestPlugin(req.params.id, authority); if (!plugin) return res.status(404).json({ error: 'plugin not found' }); res.json(withZhTwManifest(plugin)); } catch (err) { res.status(500).json({ error: String(err) }); } });
   app.post('/api/plugins/upload-zip', (req, res) => {
     helpers.pluginUpload.single('file')(req, res, async (err: unknown) => {
       if (err) return helpers.sendMulterError(res, err);

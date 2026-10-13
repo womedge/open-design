@@ -93,13 +93,15 @@ FROM ${RUNTIME_IMAGE}
 #      runtime deps from https://code.claude.com/docs/en/setup. Authenticate
 #      with CLAUDE_CODE_OAUTH_TOKEN (from `claude setup-token`).
 #   2. OpenCode from npm (musl build), so API-key (BYOK) runs work.
-#   3. A real home directory for the open-design user.
+#   3. A real home directory for the open-design user, plus everyday CLI
+#      tools agents reach for (curl, file, python3, jq).
 #   4. entrypoint.sh starts as root, fixes ownership of writable paths, then
 #      drops to open-design via su-exec. Zeabur runs containers as root
 #      regardless of USER, and Claude Code refuses bypassPermissions as root.
 ARG CLAUDE_CODE_APK_CHANNEL=stable
 ARG OPENCODE_VERSION=1.18.35
-RUN apk add --no-cache tini poppler-utils bash git su-exec libgcc libstdc++ ripgrep && \
+RUN apk add --no-cache tini poppler-utils bash git su-exec libgcc libstdc++ ripgrep \
+      curl file python3 jq && \
     wget -qO /etc/apk/keys/claude-code.rsa.pub https://downloads.claude.ai/keys/claude-code.rsa.pub && \
     echo "395759c1f7449ef4cdef305a42e820f3c766d6090d142634ebdb049f113168b6  /etc/apk/keys/claude-code.rsa.pub" | sha256sum -c - && \
     echo "https://downloads.claude.ai/claude-code/apk/${CLAUDE_CODE_APK_CHANNEL}" >> /etc/apk/repositories && \

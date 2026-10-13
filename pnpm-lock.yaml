@@ -153,6 +153,9 @@ importers:
       node-pty:
         specifier: 1.1.0
         version: 1.1.0
+      opencc-js:
+        specifier: 1.4.2
+        version: 1.4.2
       pdf-lib:
         specifier: 1.17.1
         version: 1.17.1
@@ -5562,6 +5565,9 @@ packages:
         optional: true
       zod:
         optional: true
+
+  opencc-js@1.4.2:
+    resolution: {integrity: sha512-EdcspgdROiCCZDM+jZR6Pa670xW+EW2QhctPBQ8gRjg6lrx4IHEl+2s+kt5izk/TkxVRgdWuFgaGkaEdIUfdaw==}
 
   p-cancelable@2.1.1:
     resolution: {integrity: sha512-BZOr3nRQHOntUjTrH8+Lh54smKHoHyur8We1V8DSMVrl5A2malOOwuJRnKRDjSnkoeBh4at6BwEnb5I7Jl31wg==}
@@ -11594,6 +11600,8 @@ snapshots:
     optionalDependencies:
       ws: 8.21.3
       zod: 4.4.2
+
+  opencc-js@1.4.2: {}
 
   p-cancelable@2.1.1: {}
 

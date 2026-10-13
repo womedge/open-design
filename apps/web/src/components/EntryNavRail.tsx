@@ -68,6 +68,7 @@ import { Icon } from './Icon';
 import { GITHUB_STARS_FALLBACK_LABEL, formatStars, useGithubStars } from './useGithubStars';
 import { PlanWordmark, planBadgeTierForWorkspace } from './PlanWordmark';
 import { BrandLockup } from './BrandLockup';
+import { HIDE_CLOUD_PROMO } from '../utils/cloudPromo';
 import { MarqueeLabel } from './MarqueeLabel';
 import { RemixIcon } from './RemixIcon';
 import { InviteDialog } from './InviteDialog';
@@ -1441,7 +1442,7 @@ export function EntryTopRightCluster({
           {/* GitHub star chip: its own option in the cluster, right after the
               campaign badge (per product) — it used to live in the account
               menu's social row. */}
-          {clusterVisible ? (
+          {clusterVisible && !HIDE_CLOUD_PROMO ? (
             <a
               className="entry-top-right-github"
               href={REPO_URL}
@@ -1660,7 +1661,7 @@ export function EntryTopRightCluster({
       {accountInRail
         ? createPortal(
             <div className="entry-nav-rail__account-dock">
-              <RailSocialRow page={page} dimensions={workspaceDimensions} />
+              {HIDE_CLOUD_PROMO ? null : <RailSocialRow page={page} dimensions={workspaceDimensions} />}
               <div
                 ref={accountContainerRef}
                 className={`entry-nav-rail__account${accountOpen ? ' is-menu-open' : ''}`}
@@ -1705,6 +1706,7 @@ export function EntryTopRightCluster({
                     holds, and a row hidden behind a hover menu made the unread
                     dot on the avatar point at something two interactions
                     away. */}
+                {HIDE_CLOUD_PROMO ? null : (
                 <button
                   type="button"
                   ref={messageCenterBellRef}
@@ -1725,6 +1727,7 @@ export function EntryTopRightCluster({
                     <span className="entry-nav-rail__menu-item-dot" aria-hidden />
                   ) : null}
                 </button>
+                )}
                 {/* Update-ready rocket, parked at the row's outer edge — last
                     in a fixed-slot tail so the elastic name column absorbs
                     whatever width is left. Mounted unconditionally so the
@@ -1868,7 +1871,7 @@ export function EntryTopRightCluster({
           it. Signed-out shells have no account module — `EntryNavRail` mounts
           its own MessageCenter for that branch, so this one is context-gated
           to keep exactly one instance (and one unread poller) alive. */}
-      {context ? (
+      {context && !HIDE_CLOUD_PROMO ? (
         <MessageCenter
           hideTrigger
           returnFocusRef={messageCenterBellRef}
@@ -1946,7 +1949,7 @@ export function WorkspaceTopRightAccountCluster({
     now: deepSeekCampaignVisibility.now,
   });
   const campaignAudience =
-    deepSeekCampaignAudience === 'unknown'
+    HIDE_CLOUD_PROMO || deepSeekCampaignAudience === 'unknown'
       ? null
       : deepSeekCampaignAudience;
   return (
@@ -2764,7 +2767,7 @@ export function EntryNavRail({
             className="entry-nav-rail__account-dock entry-nav-rail__account-dock--local"
             data-testid="entry-nav-local-account-dock"
           >
-            <RailSocialRow page={analyticsPage} dimensions={workspaceDimensions} />
+            {HIDE_CLOUD_PROMO ? null : <RailSocialRow page={analyticsPage} dimensions={workspaceDimensions} />}
             <div className="entry-nav-rail__account">
               <button
                 type="button"
@@ -2789,6 +2792,7 @@ export function EntryNavRail({
                 </span>
                 <span className="entry-nav-rail__account-name">{t('entry.localAccountName')}</span>
               </button>
+              {HIDE_CLOUD_PROMO ? null : (
               <button
                 type="button"
                 ref={messageCenterRailRef}
@@ -2812,6 +2816,7 @@ export function EntryNavRail({
                   <span className="entry-nav-rail__menu-item-dot" aria-hidden />
                 ) : null}
               </button>
+              )}
             </div>
           </div>
         </div>
@@ -2822,7 +2827,7 @@ export function EntryNavRail({
           bell above is its opener). Signed-in mounts move into
           `EntryTopRightCluster` — context-gating both sides is what keeps
           exactly one panel (and one unread poller) alive. */}
-      {context ? null : (
+      {context || HIDE_CLOUD_PROMO ? null : (
         <MessageCenter
           hideTrigger
           returnFocusRef={messageCenterRailRef}

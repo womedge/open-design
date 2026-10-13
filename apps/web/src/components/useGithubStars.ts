@@ -7,6 +7,7 @@
 
 import { useEffect, useState } from 'react';
 import type { OpenDesignGithubRepoResponse } from '@open-design/contracts';
+import { HIDE_CLOUD_PROMO } from '../utils/cloudPromo';
 
 const API = '/api/github/open-design';
 const REPO = 'https://github.com/nexu-io/open-design';
@@ -106,6 +107,8 @@ export function useGithubStars(): number | null {
   });
 
   useEffect(() => {
+    // The star chip is hidden in self-hosted builds; skip the lookup too.
+    if (HIDE_CLOUD_PROMO) return;
     const now = Date.now();
     const cached = memoryCache ?? readPersistedCache();
     if (cached && now - cached.ts < CACHE_TTL_MS) {

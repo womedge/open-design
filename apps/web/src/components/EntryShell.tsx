@@ -775,7 +775,7 @@ export function EntryShell({
     ? 'unknown'
     : resolvedDeepSeekV4FlashCampaignAudience;
   const topRightCampaignAudience =
-    deepSeekV4FlashCampaignAudience === 'unknown'
+    HIDE_CLOUD_PROMO || deepSeekV4FlashCampaignAudience === 'unknown'
       ? null
       : deepSeekV4FlashCampaignAudience;
   // The CMS touchpoints this rail hosts are home placements (`opend.home.*`).
@@ -1882,7 +1882,7 @@ export function EntryShell({
               the workspace tabs bar (entryRailBridge), the updater popup host
               lives in the rail footer, and everything below is fixed-position
               or portalled so it occupies no layout space here. */}
-          <WhatsNewPopup active={view === 'home' && !goPlanSunsetMessagePending} />
+          {HIDE_CLOUD_PROMO ? null : <WhatsNewPopup active={view === 'home' && !goPlanSunsetMessagePending} />}
           {/* The campaign badge lives in EntryNavRail's top-right cluster so it
               stays beside the account module across every entry tab. */}
           <div

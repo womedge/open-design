@@ -1,6 +1,8 @@
 import type { AgentInfo } from '../types';
+import { HIDE_CLOUD_PROMO } from './cloudPromo';
 
-const HIDDEN_LOCAL_CLI_AGENT_IDS = new Set(['byok-opencode']);
+// Self-hosted builds that hide OpenDesign Cloud also hide its `amr` agent card.
+const HIDDEN_LOCAL_CLI_AGENT_IDS = new Set(HIDE_CLOUD_PROMO ? ['byok-opencode', 'amr'] : ['byok-opencode']);
 
 export function isVisibleLocalCliAgent(agent: Pick<AgentInfo, 'id'>): boolean {
   return !HIDDEN_LOCAL_CLI_AGENT_IDS.has(agent.id);

@@ -7,6 +7,7 @@ import { MatrixLoader } from '../../src/components/MatrixLoader';
 import { installWebObservability } from '../../src/observability/install';
 import { installChatScrollExperiments } from '../../src/runtime/chat-scroll-experiments';
 import { installChatScrollTakeover } from '../../src/runtime/chat-scroll-takeover';
+import { PRODUCT_NAME } from '../../src/utils/brand';
 
 // Install browser exception handlers at module-load time, before any other
 // client code can throw. The hooks buffer events until AnalyticsProvider
@@ -48,7 +49,7 @@ const App = dynamic(() => import('../../src/App').then((m) => m.App), {
   loading: () => (
     <div className="od-loading-shell">
       <MatrixLoader />
-      <span>Loading OpenDesign…</span>
+      <span>Loading {PRODUCT_NAME}…</span>
     </div>
   ),
 });

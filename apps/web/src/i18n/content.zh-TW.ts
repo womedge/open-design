@@ -22,7 +22,7 @@ export const ZH_TW_SKILL_COPY: Record<string, { description?: string; examplePro
   },
   'agent-browser': {
     description:
-      '面向 AI agent 的瀏覽器自動化 CLI。當使用者需要檢查、\n測試或自動化瀏覽器行為時使用：導航頁面、填寫表單、\n點選按鈕、截圖、提取頁面資料、讀取選中的\nOpenDesign 瀏覽器標籤頁上下文、測試 web 應用、試用 OpenDesign\n預覽、QA、缺陷排查或評審應用品質。除非使用者明確要求外部瀏覽，\n否則優先使用本地 OpenDesign 預覽 URL。',
+      '面向 AI agent 的瀏覽器自動化 CLI。當使用者需要檢查、\n測試或自動化瀏覽器行為時使用：導航頁面、填寫表單、\n點選按鈕、截圖、提取頁面資料、讀取選中的\nOpenDesign 瀏覽器標籤頁上下文、測試 web 應用、試用 OpenDesign\n預覽、QA、缺陷排查或評審應用品質。除非使用者明確要求外部瀏覽，\n否則優先使用本機 OpenDesign 預覽 URL。',
     examplePrompt:
       '面向 AI agent 的瀏覽器自動化 CLI。',
   },
@@ -1026,7 +1026,7 @@ export const ZH_TW_DESIGN_SYSTEM_SUMMARIES: Record<string, string> = {
   'nike': '運動零售。單色 UI，超大號大寫字型，全幅攝影。',
   'notion': '一體化工作空間。溫暖的極簡主義，襯線標題，柔和的表面。',
   'nvidia': 'GPU 計算。綠黑能量配色，技術性的力量美學。',
-  'ollama': '在本地執行 LLM。終端優先，極簡單色。',
+  'ollama': '在本機執行 LLM。終端優先，極簡單色。',
   'openai': '沉靜、近乎單色的體系，以深青黑為基調，搭配充裕留白與編輯式排版。',
   'opencode-ai': 'AI 程式設計平台。以開發者為中心的深色主題。',
   'pacman': '復古街機風格設計，採用畫素字型、虛線邊框、活潑的高對比色彩與 8-bit 遊戲美學。',
@@ -1302,7 +1302,7 @@ export const ZH_TW_PROMPT_TEMPLATE_COPY: Record<string, Partial<Pick<PromptTempl
   'illustrated-city-food-map': {
     title: '手繪城市美食地圖',
     summary:
-      '生成一張手繪水彩風格的旅遊地圖，標註帶編號的本地美食特色、地標和圖例。',
+      '生成一張手繪水彩風格的旅遊地圖，標註帶編號的本機美食特色、地標和圖例。',
   },
   'illustration-crayon-kid-drawing-rework': {
     title: '插畫 - 蠟筆兒童畫再創作',

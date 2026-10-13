@@ -104,6 +104,7 @@ import {
   RailAccountSyncTip,
 } from './CloudSignInTip';
 import { HIDE_CLOUD_PROMO } from '../utils/cloudPromo';
+import { PRODUCT_NAME } from '../utils/brand';
 import {
   resolveEntryRailAccountFooterState,
   requiresAmrReauthentication,
@@ -3765,7 +3766,7 @@ function OnboardingView({
           <footer className="onboarding-cloud__footer">
             <LanguageMenu placement="up" align="start" />
             <span>
-              © {new Date().getFullYear()} OpenDesign · {t('settings.onboardingCloudRights')}
+              © {new Date().getFullYear()} {PRODUCT_NAME} · {t('settings.onboardingCloudRights')}
             </span>
           </footer>
         </div>

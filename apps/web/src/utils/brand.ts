@@ -8,6 +8,9 @@
  */
 export const BRAND_NAME = (process.env.NEXT_PUBLIC_OD_BRAND_NAME ?? '').trim();
 
+/** The product name shown to users: the configured brand, else "OpenDesign". */
+export const PRODUCT_NAME = BRAND_NAME || 'OpenDesign';
+
 export const DOCUMENT_TITLE = BRAND_NAME ? `${BRAND_NAME} · OpenDesign` : 'OpenDesign';
 
 /** i18n keys that name the product itself, rather than describing OpenDesign. */

@@ -70,7 +70,7 @@ export const ZH_TW_SKILL_COPY: Record<string, { description?: string; examplePro
   },
   'brandkit': {
     description:
-      '高階品牌套件影象生成技能，用於建立高階品牌指南板、logo 系統、識別卡組和視覺世界演示。針對極簡、電影感、編輯、暗調科技、奢華、文化、安全、遊戲、開發者工具和消費應用品牌系統進行了訓練。最佳化用於有意圖的 logo 概念設計、精煉的構圖、簡約的字型排印、強烈的符號意義、高階樣機、藝術指導的影象和靈活的網格佈局。',
+      '高階品牌套件影象生成技能，用於建立高階品牌指南板、logo 系統、識別卡組和視覺世界演示。針對極簡、電影感、編輯、暗調科技、奢華、文化、安全、遊戲、開發者工具和消費應用品牌系統進行了訓練。優化用於有意圖的 logo 概念設計、精煉的構圖、簡約的字型排印、強烈的符號意義、高階樣機、藝術指導的影象和靈活的網格佈局。',
     examplePrompt:
       '為該產品建立一張高階品牌套件概覽圖：logo 方向、配色、字型、應用場景和連貫的視覺世界。',
   },
@@ -226,9 +226,9 @@ export const ZH_TW_SKILL_COPY: Record<string, { description?: string; examplePro
   },
   'enhance-prompt': {
     description:
-      '用設計規範和 UI/UX 術語最佳化提示詞。適用於設計轉程式碼工作流，以及為視覺產出明確需求。',
+      '用設計規範和 UI/UX 術語優化提示詞。適用於設計轉程式碼工作流，以及為視覺產出明確需求。',
     examplePrompt:
-      '用設計規範和 UI/UX 術語最佳化提示詞。',
+      '用設計規範和 UI/UX 術語優化提示詞。',
   },
   'export-download-debugging': {
     description:
@@ -466,7 +466,7 @@ export const ZH_TW_SKILL_COPY: Record<string, { description?: string; examplePro
   },
   'gsap-performance': {
     description:
-      '官方 GSAP 技能，針對效能 —— 優先使用 transform、避免佈局抖動、will-change、批處理。當最佳化 GSAP 動畫、減少卡頓，或使用者詢問動畫效能、FPS 或流暢的 60fps 時使用。',
+      '官方 GSAP 技能，針對效能 —— 優先使用 transform、避免佈局抖動、will-change、批處理。當優化 GSAP 動畫、減少卡頓，或使用者詢問動畫效能、FPS 或流暢的 60fps 時使用。',
     examplePrompt:
       '官方 GSAP 技能，針對效能 —— 優先使用 transform、避免佈局抖動、will-change、批處理。',
   },
@@ -544,7 +544,7 @@ export const ZH_TW_SKILL_COPY: Record<string, { description?: string; examplePro
   },
   'imagegen-frontend-web': {
     description:
-      '頂級前端影象方向技能，用於生成高階、注重轉化的網站設計參考。關鍵輸出規則 — 為每一個區塊單獨生成一張橫向影象。一個有 8 個區塊的落地頁要產出 8 張影象。切勿將多個區塊壓縮排一張影象。強制構圖多樣性（不要總是左文 / 右圖）、背景圖自由度、多樣化的 CTA、多樣化的 hero 尺度（巨型 / 中型 / 極簡迷你）、敘事概念主線、二次閱讀亮點，以及貫穿所有影象的單一一致配色。針對落地頁、營銷網站和產品概念圖最佳化，便於開發者或編碼模型準確復刻。',
+      '頂級前端影象方向技能，用於生成高階、注重轉化的網站設計參考。關鍵輸出規則 — 為每一個區塊單獨生成一張橫向影象。一個有 8 個區塊的落地頁要產出 8 張影象。切勿將多個區塊壓縮排一張影象。強制構圖多樣性（不要總是左文 / 右圖）、背景圖自由度、多樣化的 CTA、多樣化的 hero 尺度（巨型 / 中型 / 極簡迷你）、敘事概念主線、二次閱讀亮點，以及貫穿所有影象的單一一致配色。針對落地頁、營銷網站和產品概念圖優化，便於開發者或編碼模型準確復刻。',
     examplePrompt:
       '為落地頁的每個區塊單獨生成高階的網站參考影象，保持統一連貫的配色和多樣化的構圖。',
   },
@@ -568,7 +568,7 @@ export const ZH_TW_SKILL_COPY: Record<string, { description?: string; examplePro
   },
   'marketing-psychology': {
     description:
-      '將心理學原理和行為科學應用於文案和設計。適用於最佳化吸引點、框架表述和價格呈現。',
+      '將心理學原理和行為科學應用於文案和設計。適用於優化吸引點、框架表述和價格呈現。',
     examplePrompt:
       '將心理學原理和行為科學應用於文案和設計。',
   },
@@ -610,9 +610,9 @@ export const ZH_TW_SKILL_COPY: Record<string, { description?: string; examplePro
   },
   'paywall-upgrade-cro': {
     description:
-      '設計並最佳化升級頁、付費牆和增購彈窗。適用於 SaaS 轉化設計和定價頁實驗。',
+      '設計並優化升級頁、付費牆和增購彈窗。適用於 SaaS 轉化設計和定價頁實驗。',
     examplePrompt:
-      '設計並最佳化升級頁、付費牆和增購彈窗。',
+      '設計並優化升級頁、付費牆和增購彈窗。',
   },
   'pdf': {
     description:
@@ -742,9 +742,9 @@ export const ZH_TW_SKILL_COPY: Record<string, { description?: string; examplePro
   },
   'slack-gif-creator': {
     description:
-      '建立為 Slack 最佳化的動態 GIF，附帶尺寸約束校驗器和可組合的動畫基元。',
+      '建立為 Slack 優化的動態 GIF，附帶尺寸約束校驗器和可組合的動畫基元。',
     examplePrompt:
-      '建立為 Slack 最佳化的動態 GIF，附帶尺寸約束校驗器和可組合的動畫基元。',
+      '建立為 Slack 優化的動態 GIF，附帶尺寸約束校驗器和可組合的動畫基元。',
   },
   'slides': {
     description:
@@ -1013,7 +1013,7 @@ export const ZH_TW_DESIGN_SYSTEM_SUMMARIES: Record<string, string> = {
   'meta': '科技零售門店。攝影優先，明暗二元表面，Meta Blue 行動召喚按鈕。',
   'minimal': '刪繁就簡的設計，強調留白、乾淨的排版與剋制的配色，追求極致的清晰與專注。',
   'minimax': 'AI 模型供應商。醒目的深色介面，搭配霓虹點綴。',
-  'mintlify': '文件平台。乾淨、綠色點綴、為閱讀最佳化。',
+  'mintlify': '文件平台。乾淨、綠色點綴、為閱讀優化。',
   'miro': '視覺化協作。明亮的黃色點綴，無限畫布美學。',
   'mission-control': '太空／航天任務監控。深色指揮中心，琥珀色遙測資料，等寬字型般的精準。功能性清晰高於一切。',
   'mistral-ai': '開放權重 LLM 供應商。法式工程的極簡主義，紫色調。',
@@ -1422,7 +1422,7 @@ export const ZH_TW_PROMPT_TEMPLATE_COPY: Record<string, Partial<Pick<PromptTempl
   'profile-avatar-song-dynasty-hanfu-portrait': {
     title: '頭像 / Avatar - 宋代漢服肖像',
     summary:
-      '一條經過最佳化的提示詞，用於生成古典庭院中身著宋代傳統漢服美人的精細寫實肖像。',
+      '一條經過優化的提示詞，用於生成古典庭院中身著宋代傳統漢服美人的精細寫實肖像。',
   },
   'social-media-post-anime-pokemon-shop-outfit-teaser-poster': {
     title: '社交媒體帖子 - 動漫寶可夢商店穿搭預告海報',

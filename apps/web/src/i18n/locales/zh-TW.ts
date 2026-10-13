@@ -2227,8 +2227,8 @@ export const zhTW: Dict = {
   "project.brandReadyCta": "在設計體系中預覽",
   "project.brandReadyDismiss": "忽略",
   "project.brandReadyRefineHint":
-    "自動擷取可能漏掉細節。大範圍使用前先最佳化這套體系。",
-  "project.brandReadyAiOptimize": "AI 最佳化",
+    "自動擷取可能漏掉細節。大範圍使用前先優化這套體系。",
+  "project.brandReadyAiOptimize": "AI 優化",
   "project.brandReadyEditManually": "手動編輯",
   "project.brandReadyPreviewOpened": "已跳轉到設計體系預覽。",
   "project.previewCommentSaveFailed": "留言儲存失敗，請再試一次。",
@@ -2665,7 +2665,7 @@ export const zhTW: Dict = {
   "browserUse.action.extract_svgs.output":
     "提取內聯 SVG 和外鏈 .svg，分別儲存為 SVG 檔案。",
   "browserUse.action.optimize_svgs.output":
-    "輸出最佳化後的 SVG 檔案和壓縮比例。",
+    "輸出優化後的 SVG 檔案和壓縮比例。",
   "browserUse.action.extract_colors.output":
     "頻率加權配色板和 :root CSS 顏色變數，輸出 palette.json 與 palette.html。",
   "browserUse.action.extract_fonts.output":
@@ -2847,7 +2847,7 @@ export const zhTW: Dict = {
   "chat.designToolbox.prompt.assetSearch":
     "為目前設計尋找最合適的圖片/參考素材。搜尋現有檔案、connectors、MCP、瀏覽器截圖和生成工具，給出具體候選、使用方式、必要的授權/來源提醒；如果沒有可用素材，給出可執行的生圖 prompt。",
   "chat.designToolbox.prompt.iconWorkflow":
-    "最佳化目前設計的 icon 系統：找出缺失圖示，替換薄弱圖示，保持描邊/填充/圓角/線寬一致；優先使用現有圖示庫，庫裡沒有合適圖示時再生成 SVG/icon prompt。",
+    "優化目前設計的 icon 系統：找出缺失圖示，替換薄弱圖示，保持描邊/填充/圓角/線寬一致；優先使用現有圖示庫，庫裡沒有合適圖示時再生成 SVG/icon prompt。",
   "chat.designToolbox.prompt.imageReplace":
     "審查目前設計裡的每個圖片位，找出佔位感或品質弱的配圖，然後替換或指定更好的 hero、分區、背景、卡片和社媒圖。保持佈局不亂，並給出明確檔案/prompt/來源選擇。",
   "chat.designToolbox.prompt.referenceExtract":
@@ -3769,7 +3769,7 @@ export const zhTW: Dict = {
   "assistant.producedFiles": "本輪產出的檔案",
   "assistant.openFile": "開啟",
   "assistant.downloadFile": "下載",
-  "nextStep.imageContinue": "繼續最佳化",
+  "nextStep.imageContinue": "繼續優化",
   "nextStep.imageVariants": "生成變體/換一批",
   "nextStep.imageStyle": "調整風格/構圖",
   "nextStep.title": "下一步",

@@ -243,6 +243,7 @@ import { Icon } from './Icon';
 import { RemixIcon } from './RemixIcon';
 import { projectIsSharedWithWorkspace } from '../collab/project-shared-status';
 import { HandoffButton } from './HandoffButton';
+import { HIDE_CLOUD_PROMO } from '../utils/cloudPromo';
 import { SocialShareGrid } from './SocialShareGrid';
 import { Toast } from './Toast';
 import {
@@ -7170,7 +7171,7 @@ function ReactComponentViewer({
                   </div>
                 ) : null}
               </div>
-              {viewerOnly ? null : (
+              {viewerOnly || HIDE_CLOUD_PROMO ? null : (
                 <HandoffButton
                   projectId={projectId}
                   projectKind={projectKind}
@@ -17394,7 +17395,7 @@ function HtmlViewer({
                   </AnchoredMenuShell>
                 ) : null}
               </div>
-              {viewerOnly ? null : (
+              {viewerOnly || HIDE_CLOUD_PROMO ? null : (
                 <HandoffButton
                   projectId={projectId}
                   projectKind={projectKind}

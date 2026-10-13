@@ -103,6 +103,7 @@ import {
   RailAccountRecoveryTip,
   RailAccountSyncTip,
 } from './CloudSignInTip';
+import { HIDE_CLOUD_PROMO } from '../utils/cloudPromo';
 import {
   resolveEntryRailAccountFooterState,
   requiresAmrReauthentication,
@@ -733,7 +734,7 @@ export function EntryShell({
     accountFooterNotice = <RailAccountSyncTip />;
   } else if (accountFooterState === 'recovering') {
     accountFooterNotice = <RailAccountRecoveryTip />;
-  } else if (accountFooterState === 'sign-in') {
+  } else if (accountFooterState === 'sign-in' && !HIDE_CLOUD_PROMO) {
     accountFooterNotice = <CloudSignInTip />;
   }
   const workspaceContextRef = useRef(workspaceContext);
@@ -3612,6 +3613,7 @@ function OnboardingView({
           <div className="onboarding-cloud__center">
             <h1 className="onboarding-cloud__title">{t('settings.onboardingCloudTitle')}</h1>
             <p className="onboarding-cloud__body">{t('settings.onboardingCloudBody')}</p>
+            {HIDE_CLOUD_PROMO ? null : (
             <div className={onboardingWelcomeStyles.signInAction}>
               {!amrSignedIn && !amrStatusResolving && !cloudBusy ? (
                 <span className={onboardingWelcomeStyles.creditCorner}>
@@ -3665,7 +3667,8 @@ function OnboardingView({
                 </span>
               </button>
             </div>
-            {amrLoginError ? (
+            )}
+            {amrLoginError && !HIDE_CLOUD_PROMO ? (
               <span className="onboarding-cloud__error" role="alert">
                 {amrLoginError}
               </span>
@@ -3683,9 +3686,11 @@ function OnboardingView({
                 aria-hidden={cloudBusy ? true : undefined}
               >
                 <div className={onboardingWelcomeStyles.alternatives}>
-                  <div className={onboardingWelcomeStyles.divider}>
-                    {t('settings.onboardingOwnAi')}
-                  </div>
+                  {HIDE_CLOUD_PROMO ? null : (
+                    <div className={onboardingWelcomeStyles.divider}>
+                      {t('settings.onboardingOwnAi')}
+                    </div>
+                  )}
                   <div className={`onboarding-cloud__alts ${onboardingWelcomeStyles.options}`}>
                     <Button
                       variant="subtle"
@@ -3876,7 +3881,7 @@ function OnboardingView({
             </div>
           </div>
           <div className="onboarding-view__actions">
-            {amrLoginError ? (
+            {amrLoginError && !HIDE_CLOUD_PROMO ? (
               <span className="onboarding-view__action-status is-error" role="alert">
                 {amrLoginError}
               </span>

@@ -220,6 +220,7 @@ import {
   requestNotificationPermission,
   showCompletionNotification,
 } from '../utils/notifications';
+import { HIDE_CLOUD_PROMO } from '../utils/cloudPromo';
 
 export type SettingsSection =
   | 'general'
@@ -4527,7 +4528,7 @@ export function SettingsDialog({
                 </button>
               </div>
               </div>
-              {cfg.mode === 'daemon' && !amrCardSignedIn ? (
+              {cfg.mode === 'daemon' && !amrCardSignedIn && !HIDE_CLOUD_PROMO ? (
                 // Only prompt to sign into OpenDesign Cloud when NOT already
                 // signed in — the AMR/vela session IS the cloud identity (one
                 // session drives both), so a logged-in user has nothing to do

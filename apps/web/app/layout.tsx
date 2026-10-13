@@ -12,12 +12,12 @@ import '../src/components/TestCampaignModal.module.css';
 import '../src/components/HoverTouchpointOverlay.module.css';
 import '../src/components/ProductionCampaignBadge.module.css';
 import '../src/components/OnboardingWelcome.module.css';
-import { DOCUMENT_TITLE } from '../src/utils/brand';
+import { DOCUMENT_TITLE, FAVICON } from '../src/utils/brand';
 
 export const metadata: Metadata = {
   title: DOCUMENT_TITLE,
   icons: {
-    icon: '/app-icon.png',
+    icon: FAVICON,
     apple: '/app-icon.png',
   },
 };

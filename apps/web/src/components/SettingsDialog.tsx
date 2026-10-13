@@ -4452,6 +4452,7 @@ export function SettingsDialog({
                 <small>{t('settings.mcpServerHint')}</small>
               </span>
             </button>
+            {HIDE_CLOUD_PROMO ? null : (
             <button
               type="button"
               className={`settings-nav-item${activeSection === 'privacy' ? ' active' : ''}`}
@@ -4463,6 +4464,7 @@ export function SettingsDialog({
                 <small>{t('settings.privacyHint')}</small>
               </span>
             </button>
+            )}
             <button
               type="button"
               className={`settings-nav-item${activeSection === 'about' ? ' active' : ''}`}
@@ -5232,7 +5234,7 @@ export function SettingsDialog({
                       </div>
                     )}
                   </div>
-                  {unavailableAgents.length > 0 ? (
+                  {unavailableAgents.length > 0 && !HIDE_CLOUD_PROMO ? (
                     <details
                       className="agent-install-collapse"
                       open={installedAgents.length > 0 ? undefined : true}
@@ -6086,7 +6088,7 @@ export function SettingsDialog({
             />
           ) : null}
 
-          {activeSection === 'privacy' ? (
+          {activeSection === 'privacy' && !HIDE_CLOUD_PROMO ? (
             <PrivacySection cfg={cfg} setCfg={setCfg} />
           ) : null}
 
@@ -6099,14 +6101,17 @@ export function SettingsDialog({
                       <div className="settings-about-version-left">
                         <dt>{t('settings.appVersion')}</dt>
                         <span className="settings-about-version-num">{appVersionInfo.version}</span>
+                        {HIDE_CLOUD_PROMO ? null : (
                         <dd
                           aria-live="polite"
                           className={`settings-about-update-status settings-about-update-status--${aboutUpdateControl.statusTone}`}
                         >
                           {t(aboutUpdateControl.statusKey, aboutUpdateControl.statusVars)}
                         </dd>
+                        )}
                       </div>
                     </div>
+                    {HIDE_CLOUD_PROMO ? null : (
                     <div className="settings-about-update-actions">
                       {aboutUpdateControl.primaryLabelKey ? (
                         <button
@@ -6140,6 +6145,7 @@ export function SettingsDialog({
                         </button>
                       ) : null}
                     </div>
+                    )}
                   </div>
                   <div>
                     <dt>{t('settings.appChannel')}</dt>
@@ -6165,6 +6171,7 @@ export function SettingsDialog({
               ) : (
                 <div className="empty-card">{t('settings.versionUnavailable')}</div>
               )}
+              {HIDE_CLOUD_PROMO ? null : (
               <div className="settings-about-diagnostics settings-about-silent-updates">
                 <label className="settings-about-toggle">
                   <input
@@ -6234,6 +6241,7 @@ export function SettingsDialog({
                   </span>
                 </label>
               </div>
+              )}
               {aboutUpdaterModel.environment === 'desktop'
                 && aboutUpdaterModel.supported
                 && appVersionInfo?.packaged !== false ? (
@@ -6269,6 +6277,7 @@ export function SettingsDialog({
                   )}
                 </div>
               ) : null}
+              {HIDE_CLOUD_PROMO ? null : (
               <div className="settings-about-diagnostics">
                 <div className="settings-about-diagnostics-text">
                   <h4>{t('diagnostics.exportTitle')}</h4>
@@ -6276,6 +6285,8 @@ export function SettingsDialog({
                 </div>
                 <ExportDiagnosticsRow />
               </div>
+              )}
+              {HIDE_CLOUD_PROMO ? null : (
               <div className="settings-about-diagnostics">
                 <div className="settings-about-diagnostics-text">
                   <h4>{t('settings.resetOnboarding')}</h4>
@@ -6285,6 +6296,7 @@ export function SettingsDialog({
                   {t('settings.resetOnboardingButton')}
                 </Button>
               </div>
+              )}
             </section>
           ) : null}
 

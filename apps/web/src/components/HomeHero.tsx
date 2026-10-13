@@ -104,6 +104,7 @@ import {
 } from './composer/LexicalComposerInput';
 import { CaretFloatingLayer } from './composer/CaretFloatingLayer';
 import { PlaceholderCarousel } from './home-hero/PlaceholderCarousel';
+import { HIDE_CLOUD_PROMO } from '../utils/cloudPromo';
 import {
   buildPlaceholderScenarios,
   PLACEHOLDER_BASE_HINT_KEY,
@@ -5371,7 +5372,11 @@ export const HOME_PROMPT_EXAMPLE_CHIP_IDS = [
 // missing locale entry would silently bleed English into the home composer,
 // which is the regression this table exists to prevent.
 export function homeHeroChipPromptExamplesForLocale(chipId: string, locale: Locale): string[] {
-  return HOME_PROMPT_EXAMPLES[locale]?.[chipId] ?? HOME_PROMPT_EXAMPLES.en[chipId] ?? [];
+  const examples = HOME_PROMPT_EXAMPLES[locale]?.[chipId] ?? HOME_PROMPT_EXAMPLES.en[chipId] ?? [];
+  // Self-hosted builds do not point colleagues at the upstream site.
+  return HIDE_CLOUD_PROMO
+    ? examples.map((example) => example.replaceAll('https://open-design.ai', 'https://linear.app'))
+    : examples;
 }
 
 function homeHeroChipPromptExamples(chipId: string, locale: Locale): string[] {

@@ -1,0 +1,400 @@
+{{define "error.html"}}<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="light dark">
+<title>{{if and (eq .StatusCode 403) (eq .Message "You do not have permission to access this resource.")}}帳號尚未開通{{else if or (eq .StatusCode 502) (eq .StatusCode 503) (eq .StatusCode 504)}}暫時連不上{{else}}登入沒有完成{{end}} · OpenDesign</title>
+<style>
+  /* Tokens follow apps/web/src/styles/tokens.css (neutral greys, brand green, lime marker). */
+  :root {
+    --bg: #f4f4f2;
+    --card: #ffffff;
+    --text-strong: #202020;
+    --text: #494949;
+    --text-muted: #5c5c5c;
+    --border: #e4e4e0;
+    --border-strong: #c9c9c4;
+    --green: #00aa54;
+    --lime: #d9fbb8;
+    --lime-strong: #adf788;
+    --lime-ink: #1e4a00;
+    --btn-bg: #202020;
+    --btn-bg-hover: #3a3a3a;
+    --btn-ink: #fafafa;
+    --row: #ededeb;
+    --wash: rgba(173, 247, 136, .22);
+    --shadow: 0 1px 2px rgba(20, 20, 20, .05), 0 24px 48px -12px rgba(20, 20, 20, .12);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #101010;
+      --card: #191919;
+      --text-strong: #f3f3ef;
+      --text: #cfcfca;
+      --text-muted: #a6a6a0;
+      --border: #2b2b29;
+      --border-strong: #454542;
+      --green: #4ade80;
+      --lime: #23401a;
+      --lime-strong: #3d6e22;
+      --lime-ink: #d9fbb8;
+      --btn-bg: #f3f3ef;
+      --btn-bg-hover: #d9d9d4;
+      --btn-ink: #121212;
+      --row: #262624;
+      --wash: rgba(74, 222, 128, .06);
+      --shadow: 0 1px 2px rgba(0, 0, 0, .4), 0 24px 48px -12px rgba(0, 0, 0, .55);
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    background:
+      radial-gradient(60rem 40rem at 15% -10%, var(--wash), transparent 60%),
+      radial-gradient(40rem 30rem at 110% 110%, var(--wash), transparent 60%),
+      var(--bg);
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    color: var(--text);
+    font-family: "Albert Sans", "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", system-ui, -apple-system, "Segoe UI", sans-serif;
+    font-size: 1rem;
+    line-height: 1.75;
+    line-break: strict;
+    -webkit-font-smoothing: antialiased;
+    display: grid;
+    grid-template-columns: minmax(0, 30rem);
+    justify-content: center;
+    align-content: center;
+    padding: clamp(24px, 6vh, 64px) 16px;
+  }
+  .shell { min-width: 0; }
+  .brand {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    margin: 0 0 1.25rem .25rem;
+    color: var(--text-strong);
+    font-weight: 600;
+    font-size: .95rem;
+    letter-spacing: .01em;
+  }
+  .brand-mark {
+    width: 1.375rem;
+    height: 1.375rem;
+    border-radius: .45rem;
+    background: var(--text-strong);
+    display: grid;
+    place-items: center;
+    flex: none;
+  }
+  .brand-mark::after {
+    content: "";
+    width: .5rem;
+    height: .5rem;
+    border-radius: 50%;
+    background: var(--lime-strong);
+  }
+  main {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 1.5rem;
+    box-shadow: var(--shadow);
+    padding: 2rem 2rem 1.75rem;
+  }
+
+  /* Guest-list illustration: the visitor's row is the highlighted, unchecked one. */
+  .list {
+    border: 1px solid var(--border);
+    border-radius: 1rem;
+    padding: .75rem;
+    margin-bottom: 1.75rem;
+    display: grid;
+    gap: .5rem;
+  }
+  .list-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: .375rem .625rem;
+    padding: .5rem .625rem;
+    border-radius: .625rem;
+  }
+  .avatar { width: 1.25rem; height: 1.25rem; border-radius: 50%; background: var(--row); flex: none; }
+  .bar { height: .5rem; border-radius: 999px; background: var(--row); flex: 0 1 auto; }
+  .list-row .label { flex: 1 1 auto; min-width: 0; }
+  .list-row .check, .list-row .pending { margin-left: auto; flex: none; }
+  .bar.w1 { width: 62%; }
+  .bar.w2 { width: 48%; }
+  .check {
+    width: 1.125rem;
+    height: 1.125rem;
+    border-radius: 50%;
+    background: var(--green);
+    display: grid;
+    place-items: center;
+  }
+  .check svg { width: .7rem; height: .7rem; color: var(--card); }
+  .list-row.you { background: var(--lime); }
+  .list-row.you .avatar { background: var(--lime-strong); }
+  .list-row.you .label {
+    font-size: .8125rem;
+    font-weight: 600;
+    color: var(--lime-ink);
+    white-space: nowrap;
+  }
+  .pending {
+    font-size: .75rem;
+    font-weight: 600;
+    color: var(--lime-ink);
+    border: 1.5px dashed currentColor;
+    border-radius: 999px;
+    padding: 0 .5rem;
+    line-height: 1.5;
+    white-space: nowrap;
+  }
+  .list.retry .list-row.you { background: transparent; border: 1.5px dashed var(--border-strong); }
+  .list.retry .list-row.you .avatar { background: var(--row); }
+  .list.retry .label, .list.retry .pending { color: var(--text-muted); }
+
+  h1 {
+    color: var(--text-strong);
+    font-size: clamp(1.375rem, 1.05rem + 1.4vw, 1.875rem);
+    line-height: 1.4;
+    font-weight: 650;
+    letter-spacing: .005em;
+    margin: 0 0 .625rem;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+  }
+  mark {
+    color: inherit;
+    background: linear-gradient(transparent 58%, var(--lime-strong) 58%, var(--lime-strong) 92%, transparent 92%);
+    padding: 0 .1em;
+  }
+  /* Keep a phrase on one line when it fits; break it only when it cannot fit at all. */
+  .nb { display: inline-block; max-width: 100%; }
+  p { margin: 0; }
+  .lead { color: var(--text); text-wrap: pretty; }
+
+  .steps {
+    list-style: none;
+    margin: 1.25rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: .5rem;
+    counter-reset: step;
+  }
+  .steps li {
+    display: grid;
+    grid-template-columns: 1.5rem 1fr;
+    gap: .625rem;
+    align-items: baseline;
+    color: var(--text);
+    font-size: .9375rem;
+    counter-increment: step;
+  }
+  .steps li::before {
+    content: counter(step);
+    width: 1.5rem;
+    height: 1.5rem;
+    border-radius: 50%;
+    border: 1px solid var(--border-strong);
+    color: var(--text-strong);
+    font-size: .75rem;
+    font-weight: 600;
+    display: grid;
+    place-items: center;
+    transform: translateY(.1rem);
+  }
+
+  .actions { display: grid; gap: .625rem; margin-top: 1.75rem; }
+  .actions form { margin: 0; }
+  .btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .5rem;
+    width: 100%;
+    min-height: 3rem;
+    padding: .5rem 1.25rem;
+    border-radius: .875rem;
+    font: inherit;
+    font-weight: 600;
+    line-height: 1.4;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background-color .15s ease, border-color .15s ease, transform .08s ease;
+  }
+  .btn svg { width: 1.125rem; height: 1.125rem; flex: none; }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { background: var(--btn-bg); color: var(--btn-ink); border: 1px solid var(--btn-bg); }
+  .btn-primary:hover { background: var(--btn-bg-hover); border-color: var(--btn-bg-hover); }
+  .btn-secondary { background: transparent; color: var(--text-strong); border: 1px solid var(--border-strong); }
+  .btn-secondary:hover { border-color: var(--text-muted); }
+  .btn:focus-visible, .help a:focus-visible {
+    outline: 3px solid var(--green);
+    outline-offset: 3px;
+  }
+
+  .help {
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--border);
+    font-size: .875rem;
+    color: var(--text-muted);
+  }
+  .help a {
+    color: var(--text-strong);
+    font-weight: 600;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+    border-radius: 4px;
+    overflow-wrap: anywhere;
+  }
+  .meta {
+    margin: 1rem 0 0;
+    text-align: center;
+    font-size: .75rem;
+    color: var(--text-muted);
+    overflow-wrap: anywhere;
+  }
+
+  /* "Starting up" indicator and auto-refresh progress for the 502/503/504 state. */
+  .dots { display: inline-flex; gap: .2rem; margin-left: .15rem; vertical-align: middle; }
+  .dots i { width: .25rem; height: .25rem; border-radius: 50%; background: currentColor; opacity: .5; }
+  .progress {
+    flex-basis: 100%;
+    height: .25rem;
+    border-radius: 999px;
+    background: var(--row);
+    overflow: hidden;
+  }
+  .progress span {
+    display: block;
+    height: 100%;
+    width: 100%;
+    background: var(--green);
+    transform-origin: left center;
+    transform: scaleX(0);
+  }
+  .countdown { margin-top: .75rem; font-size: .875rem; color: var(--text-muted); }
+
+  @media (prefers-reduced-motion: no-preference) {
+    main { animation: rise .5s cubic-bezier(.2, .7, .2, 1) both; }
+    /* Guest list fills in row by row; the visitor's row lands last, unchecked. */
+    .list-row { animation: settle .45s cubic-bezier(.2, .7, .2, 1) both; }
+    .list-row:nth-child(1) { animation-delay: .15s; }
+    .list-row:nth-child(2) { animation-delay: .5s; }
+    .list-row:nth-child(3) { animation-delay: .3s; }
+    .check { animation: tick .35s cubic-bezier(.3, 1.6, .5, 1) both; }
+    .list-row:nth-child(1) .check { animation-delay: .4s; }
+    .list-row:nth-child(3) .check { animation-delay: .55s; }
+    .list-row.you .pending { animation: stamp .4s .85s cubic-bezier(.3, 1.5, .5, 1) both; }
+    .progress span { transition: transform 1s linear; }
+    .dots i { animation: blink 1.2s infinite ease-in-out; }
+    .dots i:nth-child(2) { animation-delay: .2s; }
+    .dots i:nth-child(3) { animation-delay: .4s; }
+    @keyframes rise { from { opacity: 0; transform: translateY(8px); } }
+    @keyframes settle { from { opacity: 0; transform: translateY(4px); } }
+    @keyframes tick { from { opacity: 0; transform: scale(.4); } }
+    @keyframes stamp { from { opacity: 0; transform: scale(1.25) rotate(-4deg); } }
+    @keyframes blink { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+  }
+  @media (max-width: 26rem) {
+    main { padding: 1.5rem 1.25rem 1.25rem; border-radius: 1.25rem; }
+    .list { margin-bottom: 1.375rem; }
+  }
+  /* Only reached with enlarged text on narrow screens (e.g. 320px at 200%):
+     drop the decorative list and let headings wrap so the message comes first. */
+  @media (max-width: 15em) {
+    .list { display: none; }
+    main { padding: 1.25rem 1rem 1rem; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="brand"><span class="brand-mark" aria-hidden="true"></span>OpenDesign</div>
+  <main>
+    {{/* oauth2-proxy v7.15: an allowlist rejection is the only 403 that carries the default
+         message; CSRF, provider and session failures pass their own "Login Failed" text. */}}
+    {{if and (eq .StatusCode 403) (eq .Message "You do not have permission to access this resource.")}}
+    <div class="list" aria-hidden="true">
+      <div class="list-row"><span class="avatar"></span><span class="bar w1"></span><span class="check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2 5 8.5l4.5-5"/></svg></span></div>
+      <div class="list-row you"><span class="avatar"></span><span class="label">你的帳號</span><span class="pending">尚未開通</span></div>
+      <div class="list-row"><span class="avatar"></span><span class="bar w2"></span><span class="check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2 5 8.5l4.5-5"/></svg></span></div>
+    </div>
+    <h1>這個帳號<mark class="nb">還沒有開通</mark></h1>
+    <p class="lead">你登入的 Google 帳號，還不在 OpenDesign 的<span class="nb">使用名單</span>上。</p>
+    <ol class="steps">
+      <li><span>寄信給管理員，附上你要使用的 Google 帳號。</span></li>
+      <li><span>收到開通通知後，回到這裡重新登入。</span></li>
+    </ol>
+    <div class="actions">
+      <a class="btn btn-primary" href="mailto:sam@womedge.com?subject=%E7%94%B3%E8%AB%8B%E9%96%8B%E9%80%9A%20OpenDesign%20%E5%B8%B3%E8%99%9F&amp;body=%E4%BD%A0%E5%A5%BD%EF%BC%8C%E6%88%91%E6%83%B3%E7%94%B3%E8%AB%8B%E9%96%8B%E9%80%9A%20OpenDesign%20%E7%9A%84%E4%BD%BF%E7%94%A8%E6%AC%8A%E9%99%90%E3%80%82%0A%E6%88%91%E7%9A%84%20Google%20%E5%B8%B3%E8%99%9F%E6%98%AF%EF%BC%9A">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2.5"/><path d="m4 7 8 6 8-6"/></svg>
+        寄信申請開通
+      </a>
+      <form method="GET" action="{{.ProxyPrefix}}/sign_in">
+        <input type="hidden" name="rd" value="{{if .Redirect}}{{.Redirect}}{{else}}/{{end}}">
+        <button type="submit" class="btn btn-secondary">改用其他 Google 帳號</button>
+      </form>
+    </div>
+    <p class="help">管理員信箱：<a href="mailto:sam@womedge.com">sam@womedge.com</a></p>
+    {{else if or (eq .StatusCode 502) (eq .StatusCode 503) (eq .StatusCode 504)}}
+    <div class="list retry" aria-hidden="true">
+      <div class="list-row you"><span class="avatar"></span><span class="label">OpenDesign</span><span class="pending">啟動中<span class="dots"><i></i><i></i><i></i></span></span><span class="progress"><span id="od-progress"></span></span></div>
+    </div>
+    <h1>服務<mark class="nb">暫時連不上</mark></h1>
+    <p class="lead">你已經登入了，但 OpenDesign 正在啟動或更新，通常幾分鐘內就會恢復。</p>
+    <div class="actions">
+      <a class="btn btn-primary" id="od-reload" href="{{if .Redirect}}{{.Redirect}}{{else}}/{{end}}">重新整理</a>
+    </div>
+    <p class="countdown" id="od-countdown" aria-live="polite" hidden></p>
+    <script>
+      (function () {
+        var total = 20, left = total;
+        var label = document.getElementById("od-countdown");
+        var bar = document.getElementById("od-progress");
+        var target = document.getElementById("od-reload").getAttribute("href");
+        label.hidden = false;
+        function render() {
+          label.textContent = left + " 秒後自動重新整理";
+          bar.style.transform = "scaleX(" + (1 - left / total) + ")";
+        }
+        render();
+        var timer = setInterval(function () {
+          left -= 1;
+          if (left <= 0) { clearInterval(timer); window.location.href = target; return; }
+          render();
+        }, 1000);
+      })();
+    </script>
+    <p class="help">超過十分鐘還是這樣？請寄信給 <a href="mailto:sam@womedge.com">sam@womedge.com</a>，並附上下方的錯誤代碼。</p>
+    {{else}}
+    <div class="list retry" aria-hidden="true">
+      <div class="list-row"><span class="avatar"></span><span class="bar w1"></span><span class="check"><svg viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 6.2 5 8.5l4.5-5"/></svg></span></div>
+      <div class="list-row you"><span class="avatar"></span><span class="label">登入中斷</span><span class="pending">請重試</span></div>
+    </div>
+    <h1>登入<mark class="nb">沒有完成</mark></h1>
+    <p class="lead">登入頁面停留太久或連線中斷時，會出現這個畫面。重新登入一次通常就能解決。</p>
+    <div class="actions">
+      <form method="GET" action="{{.ProxyPrefix}}/sign_in">
+        <input type="hidden" name="rd" value="{{if .Redirect}}{{.Redirect}}{{else}}/{{end}}">
+        <button type="submit" class="btn btn-primary">重新登入</button>
+      </form>
+    </div>
+    <p class="help">一直無法登入？請寄信給 <a href="mailto:sam@womedge.com">sam@womedge.com</a>，並附上下方的錯誤代碼。</p>
+    {{end}}
+  </main>
+  <p class="meta">錯誤代碼 {{.StatusCode}}{{if .RequestID}}<span aria-hidden="true"> · </span>請求編號 {{.RequestID}}{{end}}</p>
+</div>
+</body>
+</html>
+{{end}}

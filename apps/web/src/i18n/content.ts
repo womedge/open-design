@@ -29,6 +29,14 @@ import {
   ZH_CN_SKILL_COPY,
 } from './content.zh-CN';
 import {
+  ZH_TW_DESIGN_SYSTEM_CATEGORIES,
+  ZH_TW_DESIGN_SYSTEM_SUMMARIES,
+  ZH_TW_PROMPT_TEMPLATE_CATEGORIES,
+  ZH_TW_PROMPT_TEMPLATE_COPY,
+  ZH_TW_PROMPT_TEMPLATE_TAGS,
+  ZH_TW_SKILL_COPY,
+} from './content.zh-TW';
+import {
   JA_DESIGN_SYSTEM_CATEGORIES,
   JA_DESIGN_SYSTEM_SUMMARIES,
   JA_PROMPT_TEMPLATE_CATEGORIES,
@@ -1100,6 +1108,14 @@ const LOCALIZED_CONTENT: Partial<Record<Locale, LocalizedContentBundle>> = {
     promptTemplateCategories: ZH_CN_PROMPT_TEMPLATE_CATEGORIES,
     promptTemplateTags: ZH_CN_PROMPT_TEMPLATE_TAGS,
     promptTemplateCopy: ZH_CN_PROMPT_TEMPLATE_COPY,
+  },
+  'zh-TW': {
+    skillCopy: ZH_TW_SKILL_COPY,
+    designSystemSummaries: ZH_TW_DESIGN_SYSTEM_SUMMARIES,
+    designSystemCategories: ZH_TW_DESIGN_SYSTEM_CATEGORIES,
+    promptTemplateCategories: ZH_TW_PROMPT_TEMPLATE_CATEGORIES,
+    promptTemplateTags: ZH_TW_PROMPT_TEMPLATE_TAGS,
+    promptTemplateCopy: ZH_TW_PROMPT_TEMPLATE_COPY,
   },
   ja: {
     skillCopy: JA_SKILL_COPY,

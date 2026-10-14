@@ -11,15 +11,36 @@
 # the last 200 lines of its output to $OD_DATA_DIR/diagnostics/
 # container-exits.log, then exit with the same code so a crash still looks
 # like a crash. Output is still mirrored to the container's stdout.
+#
+# Optional persistence: set CLAUDE_CONFIG_DIR / OD_USER_STATE_DIR to paths on
+# the $OD_DATA_DIR volume; the root phase pre-creates them with the right owner
+# and re-copies the baked CLAUDE.md into CLAUDE_CONFIG_DIR each boot.
 
 if [ "$(id -u)" = "0" ]; then
   set -e
   export HOME=/home/open-design
+  # Create the persistent agent/user-state dirs (and any missing parents) first,
+  # so the recursive chown of $OD_DATA_DIR below covers them when they live
+  # under it; dirs outside it only get their leaf chowned afterwards.
+  for dir in "${CLAUDE_CONFIG_DIR:-}" "${OD_USER_STATE_DIR:-}"; do
+    [ -n "$dir" ] && mkdir -p "$dir"
+  done
   for dir in "$OD_DATA_DIR" /app/.od "$HOME"; do
     [ -n "$dir" ] || continue
     mkdir -p "$dir"
     chown -R open-design:open-design "$dir"
   done
+  for dir in "${CLAUDE_CONFIG_DIR:-}" "${OD_USER_STATE_DIR:-}"; do
+    [ -n "$dir" ] && chown open-design:open-design "$dir"
+  done
+  # With CLAUDE_CONFIG_DIR set (pointed at the volume so settings, --resume
+  # transcripts and memory survive restarts), Claude Code reads CLAUDE.md from
+  # there instead of ~/.claude: refresh it from the image copy on every boot so
+  # image updates take effect.
+  if [ -n "${CLAUDE_CONFIG_DIR:-}" ] && [ -f "$HOME/.claude/CLAUDE.md" ]; then
+    cp -f "$HOME/.claude/CLAUDE.md" "$CLAUDE_CONFIG_DIR/CLAUDE.md"
+    chown open-design:open-design "$CLAUDE_CONFIG_DIR/CLAUDE.md"
+  fi
   exec su-exec open-design /bin/bash "$0" "$@"
 fi
 

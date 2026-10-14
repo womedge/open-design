@@ -756,6 +756,25 @@ export function cloudflarePrefixFromSaved(saved: string, suffix = DEPLOY_SUBDOMA
   return suffix && saved.endsWith(`.${suffix}`) ? saved.slice(0, -(suffix.length + 1)) : saved;
 }
 
+// Branded build: bare name from a previous deployment's custom domain
+// (`dentsu.od.womedge.com` + zone `womedge.com` -> `dentsu`), else null.
+export function cloudflareNameFromHostname(
+  hostname: string | undefined,
+  zoneName: string | undefined,
+  suffix = DEPLOY_SUBDOMAIN_SUFFIX,
+): string | null {
+  if (!suffix || !hostname || !zoneName) return null;
+  const tail = `.${suffix}.${zoneName}`;
+  if (!hostname.endsWith(tail)) return null;
+  const name = hostname.slice(0, -tail.length);
+  return name && !name.includes('.') ? name : null;
+}
+
+// Branded build: per-project default name = first 8 chars of the project id.
+export function cloudflareDefaultName(projectId: string): string {
+  return projectId.slice(0, 8).toLowerCase();
+}
+
 export function cloudflarePrefixForDeploy(name: string, suffix = DEPLOY_SUBDOMAIN_SUFFIX): string {
   return suffix ? `${name}.${suffix}` : name;
 }
@@ -9344,6 +9363,7 @@ function HtmlViewer({
   function syncDeployFormFromConfig(
     providerId: WebDeployProviderId,
     config: WebDeployConfigResponse | null,
+    brandedName?: string,
   ) {
     const matchingConfig = config?.providerId === providerId ? config : null;
     setDeployProviderId(providerId);
@@ -9353,7 +9373,11 @@ function HtmlViewer({
     setTeamSlug(matchingConfig?.teamSlug || '');
     setCloudflareAccountId(matchingConfig?.accountId || '');
     setCloudflareZoneId(matchingConfig?.cloudflarePages?.lastZoneId || '');
-    setCloudflareDomainPrefix(cloudflarePrefixFromSaved(matchingConfig?.cloudflarePages?.lastDomainPrefix || ''));
+    if (!DEPLOY_SUBDOMAIN_SUFFIX) {
+      setCloudflareDomainPrefix(cloudflarePrefixFromSaved(matchingConfig?.cloudflarePages?.lastDomainPrefix || ''));
+    } else if (brandedName !== undefined) {
+      setCloudflareDomainPrefix(brandedName);
+    }
     // The daemon's GET /api/deploy/config response currently hardcodes `target: 'preview'`
     // as a placeholder (apps/daemon/src/deploy.ts publicDeployConfig /
     // publicCloudflarePagesConfig) rather than persisting a real user preference, so it must
@@ -9414,7 +9438,13 @@ function HtmlViewer({
     if (requestSeq !== deployProviderLoadSeqRef.current) {
       return { config: null, currentDeployment: null };
     }
-    syncDeployFormFromConfig(providerId, config);
+    const previousDomain = nextDeploymentsByProvider[CLOUDFLARE_PAGES_PROVIDER_ID]?.cloudflarePages?.customDomain;
+    syncDeployFormFromConfig(
+      providerId,
+      config,
+      cloudflareNameFromHostname(previousDomain?.hostname, previousDomain?.zoneName)
+        ?? cloudflareDefaultName(projectId),
+    );
     setDeploymentsByProvider(nextDeploymentsByProvider);
     setDeployment(currentDeployment ?? null);
     setDeployResult(currentDeployment ?? null);
@@ -9443,7 +9473,7 @@ function HtmlViewer({
         : zones[0]?.id || '';
       setCloudflareZoneId(nextZoneId);
       const hintedPrefix = response?.cloudflarePages?.lastDomainPrefix || config.cloudflarePages?.lastDomainPrefix || '';
-      if (hintedPrefix) setCloudflareDomainPrefix(cloudflarePrefixFromSaved(hintedPrefix));
+      if (hintedPrefix && !DEPLOY_SUBDOMAIN_SUFFIX) setCloudflareDomainPrefix(cloudflarePrefixFromSaved(hintedPrefix));
     } catch (err) {
       if (requestSeq !== deployProviderLoadSeqRef.current) return;
       setCloudflareZones([]);
@@ -15814,7 +15844,9 @@ function HtmlViewer({
     ? (() => {
         const cards: DeployResultCard[] = [];
         const pagesDevUrl = activeCloudflarePages.pagesDev?.url || activeDeployedUrl;
-        if (pagesDevUrl) {
+        // Branded build: the custom domain is the link people share; keep the
+        // pages.dev row only when there is no custom domain to show.
+        if (pagesDevUrl && !(DEPLOY_SUBDOMAIN_SUFFIX && activeCloudflareCustomDomain?.url)) {
           cards.push({
             id: 'pages-dev',
             label: t('fileViewer.cloudflarePagesDevLinkLabel'),

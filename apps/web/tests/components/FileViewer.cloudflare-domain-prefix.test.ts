@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  cloudflareDefaultName,
+  cloudflareNameFromHostname,
   cloudflarePagesSelectionFor,
   cloudflarePrefixForDeploy,
   cloudflarePrefixFromSaved,
@@ -32,5 +34,17 @@ describe('Cloudflare custom-domain prefix input', () => {
       domainPrefix: 'dentsu.od',
     });
     expect(cloudflarePagesSelectionFor(zone, 'dentsu', '').domainPrefix).toBe('dentsu');
+  });
+
+  it('branded: recovers the bare name from a previous deployment hostname', () => {
+    expect(cloudflareNameFromHostname('dentsu.od.womedge.com', 'womedge.com', 'od')).toBe('dentsu');
+    expect(cloudflareNameFromHostname('dentsu.womedge.com', 'womedge.com', 'od')).toBeNull();
+    expect(cloudflareNameFromHostname('dentsu.od.other.com', 'womedge.com', 'od')).toBeNull();
+    expect(cloudflareNameFromHostname(undefined, 'womedge.com', 'od')).toBeNull();
+    expect(cloudflareNameFromHostname('dentsu.od.womedge.com', 'womedge.com', '')).toBeNull();
+  });
+
+  it('branded: default name is the first 8 chars of the project id, lowercased', () => {
+    expect(cloudflareDefaultName('8DA2BA36-b02d-4c1e-9f00-123456789abc')).toBe('8da2ba36');
   });
 });

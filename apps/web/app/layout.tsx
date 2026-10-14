@@ -12,6 +12,7 @@ import '../src/components/TestCampaignModal.module.css';
 import '../src/components/HoverTouchpointOverlay.module.css';
 import '../src/components/ProductionCampaignBadge.module.css';
 import '../src/components/OnboardingWelcome.module.css';
+import { SHELL_WATCHDOG_SCRIPT } from '../src/runtime/shell-watchdog';
 import { DOCUMENT_TITLE, FAVICON } from '../src/utils/brand';
 
 export const metadata: Metadata = {
@@ -47,6 +48,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <head>
         {/* biome-ignore lint/security/noDangerouslySetInnerHtml: intentional theme-init inline script to prevent FOUC */}
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: inline on purpose, must not depend on a chunk that may fail to load */}
+        <script dangerouslySetInnerHTML={{ __html: SHELL_WATCHDOG_SCRIPT }} />
       </head>
       <body suppressHydrationWarning>
         <I18nProvider>

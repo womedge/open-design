@@ -104,7 +104,12 @@ export function resolveDesignDeliveryOutcome(
   }
   if (input.persistenceFailed) return 'delivery_failed';
   if (containsUnrenderableQuestionForm(input.content)) return 'no_result';
-  if (!hasFileMutationToolUse(input.events) && input.content.trim().length > 0) {
+  // Deletions are not a missing deliverable: a delete-only turn that answers
+  // in text is a report-only result.
+  if (
+    !hasFileMutationToolUse(input.events, { includeDeletes: false }) &&
+    input.content.trim().length > 0
+  ) {
     return 'report_only';
   }
   return 'no_result';

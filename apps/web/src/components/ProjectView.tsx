@@ -7057,7 +7057,7 @@ export function ProjectView({
               { telemetryFinalized: true },
             );
             if (deliveryOutcome === 'no_result' || deliveryOutcome === 'delivery_failed') {
-              setError(artifactPersistenceError ?? DESIGN_RESULT_MISSING_DETAIL);
+              setError(artifactPersistenceError ?? t('chat.runError.artifactMissingMessage'));
             }
             await auditDesignSystemWorkspaceAfterRun(message.id);
             // Clear stale retry count for successfully recovered run.
@@ -7600,7 +7600,7 @@ export function ProjectView({
                   { telemetryFinalized: true },
                 );
                 if (deliveryOutcome === 'no_result' || deliveryOutcome === 'delivery_failed') {
-                  setError(artifactPersistenceError ?? DESIGN_RESULT_MISSING_DETAIL);
+                  setError(artifactPersistenceError ?? t('chat.runError.artifactMissingMessage'));
                 }
                 await auditDesignSystemWorkspaceAfterRun(message.id);
               })();
@@ -9912,7 +9912,7 @@ export function ProjectView({
                 return updated;
               });
               if (deliveryOutcome === 'no_result' || deliveryOutcome === 'delivery_failed') {
-                setError(artifactPersistenceError ?? DESIGN_RESULT_MISSING_DETAIL);
+                setError(artifactPersistenceError ?? t('chat.runError.artifactMissingMessage'));
                 if (runCommentAttachments.length > 0) {
                   void patchAttachedStatuses(runCommentAttachments, 'failed');
                 }

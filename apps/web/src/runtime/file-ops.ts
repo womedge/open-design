@@ -221,15 +221,19 @@ export function deriveFileOps(
  * Tool names must stay aligned with the daemon's cross-runtime
  * `WRITE_OR_EDIT_TOOL_NAMES` set in `apps/daemon/src/runtimes/run-artifacts.ts`.
  */
-export function hasFileMutationToolUse(events: AgentEvent[] | undefined): boolean {
+export function hasFileMutationToolUse(
+  events: AgentEvent[] | undefined,
+  opts: { includeDeletes?: boolean } = {},
+): boolean {
+  const includeDeletes = opts.includeDeletes ?? true;
   for (const ev of events ?? []) {
     if (ev.kind !== 'tool_use') continue;
     if (ev.name === 'Bash') {
-      if (extractSimpleBashDeletes(ev.input).length > 0) return true;
+      if (includeDeletes && extractSimpleBashDeletes(ev.input).length > 0) return true;
       continue;
     }
     const kind = classify(ev.name);
-    if (kind === 'write' || kind === 'edit' || kind === 'delete') return true;
+    if (kind === 'write' || kind === 'edit' || (includeDeletes && kind === 'delete')) return true;
   }
   return false;
 }

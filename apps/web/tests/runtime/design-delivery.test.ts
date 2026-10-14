@@ -40,7 +40,6 @@ describe('resolveDesignDeliveryOutcome', () => {
     for (const attempt of [
       { kind: 'tool_use' as const, id: 'w-1', name: 'Write', input: { file_path: 'index.html' } },
       { kind: 'tool_use' as const, id: 'e-1', name: 'Edit', input: { file_path: 'index.html' } },
-      { kind: 'tool_use' as const, id: 'b-1', name: 'Bash', input: { command: 'rm stale.html' } },
     ]) {
       expect(
         resolveDesignDeliveryOutcome({
@@ -52,6 +51,24 @@ describe('resolveDesignDeliveryOutcome', () => {
           traceObjectFileCount: 0,
         }),
       ).toBe('no_result');
+    }
+  });
+
+  it('treats a delete-only or shell-only turn with a text reply as report-only', () => {
+    for (const command of [
+      'rm stale.html',
+      'rm -rf index.html assets ; { echo "/* /index.html 200"; } > _redirects',
+    ]) {
+      expect(
+        resolveDesignDeliveryOutcome({
+          sessionMode: 'design',
+          runStatus: 'succeeded',
+          content: 'Removed the old files.',
+          events: [{ kind: 'tool_use', id: 'b-1', name: 'Bash', input: { command } }],
+          producedFileCount: 0,
+          traceObjectFileCount: 0,
+        }),
+      ).toBe('report_only');
     }
   });
 

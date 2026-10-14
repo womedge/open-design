@@ -2127,8 +2127,9 @@ describe('ProjectView conversation run isolation', () => {
         ]),
       );
     });
-    expect(screen.getByTestId('chat-error').textContent).toMatch(
-      /finished without producing a deliverable project file/i,
+    // The pane-level error is localized copy, not the English event detail.
+    expect(screen.getByTestId('chat-error').textContent).toBe(
+      'chat.runError.artifactMissingMessage',
     );
     expect(reattachDaemonRun).not.toHaveBeenCalled();
   });

@@ -1324,6 +1324,10 @@
   gap: 10px;
 }
 .deploy-field-inline-action {
+  /* Undo the global `button { height: 36px }` so this title-row action is no
+     taller than the plain label beside it and the inputs stay level. */
+  height: auto;
+  line-height: inherit;
   border: 0;
   padding: 0 2px;
   font-size: 13px;

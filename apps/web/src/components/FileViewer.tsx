@@ -760,6 +760,14 @@ export function cloudflarePrefixForDeploy(name: string, suffix = DEPLOY_SUBDOMAI
   return suffix ? `${name}.${suffix}` : name;
 }
 
+export function cloudflarePagesSelectionFor(
+  zone: { id: string; name: string },
+  name: string,
+  suffix = DEPLOY_SUBDOMAIN_SUFFIX,
+): WebCloudflarePagesDeploySelection {
+  return { zoneId: zone.id, zoneName: zone.name, domainPrefix: cloudflarePrefixForDeploy(name, suffix) };
+}
+
 function deployResultState(status?: string): 'ready' | 'delayed' | 'protected' | 'failed' {
   if (status === 'protected') return 'protected';
   if (status === 'failed' || status === 'conflict') return 'failed';
@@ -14372,11 +14380,7 @@ function HtmlViewer({
     if (!zone) {
       throw new Error(t('fileViewer.cloudflareZoneRequired'));
     }
-    return {
-      zoneId: zone.id,
-      zoneName: zone.name,
-      domainPrefix: prefix,
-    };
+    return cloudflarePagesSelectionFor(zone, prefix);
   }
 
   async function deployToSelectedProvider() {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  cloudflarePagesSelectionFor,
   cloudflarePrefixForDeploy,
   cloudflarePrefixFromSaved,
   isValidCloudflareDomainPrefixInput,
@@ -21,5 +22,15 @@ describe('Cloudflare custom-domain prefix input', () => {
   it('unbranded (empty suffix): upstream behavior', () => {
     expect(cloudflarePrefixForDeploy('pantene', '')).toBe('pantene');
     expect(cloudflarePrefixFromSaved('pantene.od', '')).toBe('pantene.od');
+  });
+
+  it('deploy request carries the suffixed prefix, matching the dialog preview', () => {
+    const zone = { id: 'z1', name: 'womedge.com' };
+    expect(cloudflarePagesSelectionFor(zone, 'dentsu', 'od')).toEqual({
+      zoneId: 'z1',
+      zoneName: 'womedge.com',
+      domainPrefix: 'dentsu.od',
+    });
+    expect(cloudflarePagesSelectionFor(zone, 'dentsu', '').domainPrefix).toBe('dentsu');
   });
 });

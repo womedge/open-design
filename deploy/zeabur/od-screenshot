@@ -1,0 +1,75 @@
+#!/bin/sh
+# od-screenshot — screenshot a URL or local HTML file with the image's system
+# Chromium, so agents can check what they built without installing a browser.
+#
+#   od-screenshot [--full] <url-or-file> <out.png> [width=1440] [height=900]
+#
+# --full captures the whole scrollable page. OD_SHOT_WAIT_MS (default 500)
+# adds settle time after load for animations.
+#
+# Drives Chromium through playwright-core rather than `chromium --screenshot`:
+# the CLI flag either shoots before a JS app renders, or (with
+# --virtual-time-budget) never finishes on pages that hold a connection open.
+#
+# --no-sandbox: Chromium's sandbox needs unprivileged user namespaces or a
+# setuid helper; neither exists in this container (no CAP_SYS_ADMIN, default
+# seccomp). The container itself is the isolation boundary.
+set -eu
+
+usage() {
+  echo "usage: od-screenshot [--full] <url-or-file> <out.png> [width=1440] [height=900]" >&2
+  exit 2
+}
+
+full=0
+if [ "${1:-}" = "--full" ]; then full=1; shift; fi
+[ $# -ge 2 ] || usage
+target=$1
+out=$2
+width=${3:-1440}
+height=${4:-900}
+
+case "$target" in
+  *://*) url=$target ;;
+  *)
+    [ -e "$target" ] || { echo "od-screenshot: no such file: $target" >&2; exit 1; }
+    url="file://$(cd "$(dirname "$target")" && pwd)/$(basename "$target")"
+    ;;
+esac
+case "$out" in
+  /*) ;;
+  *) out="$(pwd)/$out" ;;
+esac
+mkdir -p "$(dirname "$out")"
+
+# Throwaway profile so concurrent runs never fight over a profile lock.
+profile=$(mktemp -d "${TMPDIR:-/tmp}/od-screenshot.XXXXXX")
+trap 'rm -rf "$profile"' EXIT
+trap 'exit 130' INT TERM
+
+OD_SHOT_URL=$url OD_SHOT_OUT=$out OD_SHOT_W=$width OD_SHOT_H=$height \
+OD_SHOT_FULL=$full OD_SHOT_PROFILE=$profile \
+OD_SHOT_CHROME=${CHROME_PATH:-/usr/bin/chromium} \
+NODE_PATH="${NODE_PATH:-$(npm root -g)}" timeout 120 node -e '
+  const { chromium } = require("playwright-core");
+  const e = process.env;
+  (async () => {
+    const ctx = await chromium.launchPersistentContext(e.OD_SHOT_PROFILE, {
+      executablePath: e.OD_SHOT_CHROME,
+      args: ["--no-sandbox", "--disable-gpu", "--disable-dev-shm-usage", "--hide-scrollbars"],
+      viewport: { width: +e.OD_SHOT_W, height: +e.OD_SHOT_H },
+    });
+    const page = ctx.pages()[0] || (await ctx.newPage());
+    page.on("pageerror", (err) => console.error("page error:", err.message));
+    await page.goto(e.OD_SHOT_URL, { waitUntil: "load", timeout: 60000 });
+    // Give fetch-driven apps a moment; pages with open streams never go idle.
+    await page.waitForLoadState("networkidle", { timeout: 5000 }).catch(() => {});
+    await page.evaluate(() => document.fonts.ready);
+    await page.waitForTimeout(+(e.OD_SHOT_WAIT_MS || 500));
+    await page.screenshot({ path: e.OD_SHOT_OUT, fullPage: e.OD_SHOT_FULL === "1" });
+    await ctx.close();
+  })().catch((err) => { console.error(err.message); process.exit(1); });
+'
+
+[ -s "$out" ] || { echo "od-screenshot: no image written" >&2; exit 1; }
+echo "$out"

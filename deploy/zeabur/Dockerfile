@@ -100,6 +100,14 @@ FROM ${RUNTIME_IMAGE}
 #   4. entrypoint.sh starts as root, fixes ownership of writable paths, then
 #      drops to open-design via su-exec. Zeabur runs containers as root
 #      regardless of USER, and Claude Code refuses bypassPermissions as root.
+#   5. Headless Chromium (Alpine's package, with CJK/emoji fonts), the
+#      od-screenshot helper and playwright-core, so agents can screenshot the
+#      pages they build. Playwright's own browser downloads do not support
+#      Alpine/musl; everything points at the system binary via CHROME_PATH.
+#      Plus image/video/font tools, opencc, zip and gh (see below).
+#      agent-instructions.md tells Claude Code and OpenCode what is there.
+#   6. entrypoint.sh also records every daemon exit (code/signal + last output
+#      lines) under $OD_DATA_DIR/diagnostics, since Zeabur keeps few logs.
 ARG CLAUDE_CODE_APK_CHANNEL=stable
 ARG OPENCODE_VERSION=1.18.35
 RUN apk add --no-cache tini poppler-utils bash git su-exec libgcc libstdc++ ripgrep \
@@ -114,6 +122,27 @@ RUN apk add --no-cache tini poppler-utils bash git su-exec libgcc libstdc++ ripg
     opencode --version && \
     addgroup -S -g 1001 open-design && \
     adduser -S -D -h /home/open-design -u 1001 -G open-design open-design
+
+# Tools agents reach for while building and checking pages: headless browser
+# + CJK/emoji fonts, image/video/font processing, zh-CN<->zh-TW conversion,
+# zip and the GitHub CLI (gh; not authenticated here). Agents run as
+# open-design and cannot apk add, so what they need has to be baked in.
+ARG PLAYWRIGHT_CORE_VERSION=1.63.0
+RUN apk add --no-cache chromium font-noto-cjk font-noto-emoji font-liberation \
+      imagemagick ffmpeg py3-pillow py3-numpy py3-fonttools py3-pip opencc zip github-cli && \
+    chromium --version && \
+    npm install -g "playwright-core@${PLAYWRIGHT_CORE_VERSION}" && \
+    npm cache clean --force
+ENV CHROME_PATH=/usr/bin/chromium \
+    PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
+    PUPPETEER_SKIP_DOWNLOAD=1 \
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+    NODE_PATH=/usr/local/lib/node_modules
+COPY --chmod=0755 deploy/zeabur/od-screenshot /usr/local/bin/od-screenshot
+# User-level instructions: Claude Code reads ~/.claude/CLAUDE.md; OpenCode
+# reads ~/.config/opencode/AGENTS.md (it no longer falls back to CLAUDE.md).
+COPY --chown=open-design:open-design deploy/zeabur/agent-instructions.md /home/open-design/.claude/CLAUDE.md
+COPY --chown=open-design:open-design deploy/zeabur/agent-instructions.md /home/open-design/.config/opencode/AGENTS.md
 
 WORKDIR /app
 COPY --from=build --chown=open-design:open-design /app/deploy/daemon ./apps/daemon
@@ -136,7 +165,7 @@ RUN mkdir -p /app/.od && \
     chown -R open-design:open-design /app
 
 ENV NODE_ENV=production
-ENV NODE_OPTIONS=--max-old-space-size=192
+ENV NODE_OPTIONS=--max-old-space-size=2048
 ENV OD_BIND_HOST=0.0.0.0
 ENV OD_PORT=7456
 ENV USE_BUILTIN_RIPGREP=0

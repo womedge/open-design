@@ -243,6 +243,7 @@ import { Icon } from './Icon';
 import { RemixIcon } from './RemixIcon';
 import { projectIsSharedWithWorkspace } from '../collab/project-shared-status';
 import { HandoffButton } from './HandoffButton';
+import { DEPLOY_SUBDOMAIN_SUFFIX } from '../utils/brand';
 import { HIDE_CLOUD_PROMO } from '../utils/cloudPromo';
 import { SocialShareGrid } from './SocialShareGrid';
 import { Toast } from './Toast';
@@ -741,13 +742,22 @@ function getDeployProviderOption(providerId: WebDeployProviderId): DeployProvide
   return DEPLOY_PROVIDER_OPTIONS.find((option) => option.id === providerId) ?? DEPLOY_PROVIDER_OPTIONS[0]!;
 }
 
-function normalizeCloudflareDomainPrefixInput(raw: string): string {
+export function normalizeCloudflareDomainPrefixInput(raw: string): string {
   return raw.trim().toLowerCase();
 }
 
-function isValidCloudflareDomainPrefixInput(raw: string): boolean {
+export function isValidCloudflareDomainPrefixInput(raw: string): boolean {
   const prefix = normalizeCloudflareDomainPrefixInput(raw);
   return /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(prefix);
+}
+
+// The branded build deploys to `<name>.<suffix>.<zone>`: users type only the name.
+export function cloudflarePrefixFromSaved(saved: string, suffix = DEPLOY_SUBDOMAIN_SUFFIX): string {
+  return suffix && saved.endsWith(`.${suffix}`) ? saved.slice(0, -(suffix.length + 1)) : saved;
+}
+
+export function cloudflarePrefixForDeploy(name: string, suffix = DEPLOY_SUBDOMAIN_SUFFIX): string {
+  return suffix ? `${name}.${suffix}` : name;
 }
 
 function deployResultState(status?: string): 'ready' | 'delayed' | 'protected' | 'failed' {
@@ -9335,7 +9345,7 @@ function HtmlViewer({
     setTeamSlug(matchingConfig?.teamSlug || '');
     setCloudflareAccountId(matchingConfig?.accountId || '');
     setCloudflareZoneId(matchingConfig?.cloudflarePages?.lastZoneId || '');
-    setCloudflareDomainPrefix(matchingConfig?.cloudflarePages?.lastDomainPrefix || '');
+    setCloudflareDomainPrefix(cloudflarePrefixFromSaved(matchingConfig?.cloudflarePages?.lastDomainPrefix || ''));
     // The daemon's GET /api/deploy/config response currently hardcodes `target: 'preview'`
     // as a placeholder (apps/daemon/src/deploy.ts publicDeployConfig /
     // publicCloudflarePagesConfig) rather than persisting a real user preference, so it must
@@ -9353,7 +9363,7 @@ function HtmlViewer({
         ? { lastZoneName: zone?.name || deployConfig?.cloudflarePages?.lastZoneName }
         : {}),
       ...(cloudflareDomainPrefix.trim()
-        ? { lastDomainPrefix: normalizeCloudflareDomainPrefixInput(cloudflareDomainPrefix) }
+        ? { lastDomainPrefix: cloudflarePrefixForDeploy(normalizeCloudflareDomainPrefixInput(cloudflareDomainPrefix)) }
         : {}),
     };
     return Object.keys(hints).length > 0 ? hints : undefined;
@@ -9425,7 +9435,7 @@ function HtmlViewer({
         : zones[0]?.id || '';
       setCloudflareZoneId(nextZoneId);
       const hintedPrefix = response?.cloudflarePages?.lastDomainPrefix || config.cloudflarePages?.lastDomainPrefix || '';
-      if (hintedPrefix) setCloudflareDomainPrefix(hintedPrefix);
+      if (hintedPrefix) setCloudflareDomainPrefix(cloudflarePrefixFromSaved(hintedPrefix));
     } catch (err) {
       if (requestSeq !== deployProviderLoadSeqRef.current) return;
       setCloudflareZones([]);
@@ -15794,7 +15804,7 @@ function HtmlViewer({
   const normalizedCloudflarePrefix = normalizeCloudflareDomainPrefixInput(cloudflareDomainPrefix);
   const cloudflareHostnamePreview =
     selectedCloudflareZone && normalizedCloudflarePrefix
-      ? `${normalizedCloudflarePrefix}.${selectedCloudflareZone.name}`
+      ? `${cloudflarePrefixForDeploy(normalizedCloudflarePrefix)}.${selectedCloudflareZone.name}`
       : '';
   const deployResultCards: DeployResultCard[] = activeCloudflarePages
     ? (() => {
@@ -18437,11 +18447,19 @@ function HtmlViewer({
                   <div className="deploy-field-grid cloudflare-domain-grid">
                     <label>
                       <span className="deploy-field-title">{t('fileViewer.cloudflareDomainPrefixLabel')}</span>
-                      <input
-                        value={cloudflareDomainPrefix}
-                        placeholder={t('fileViewer.cloudflareDomainPrefixPlaceholder')}
-                        onChange={(e) => setCloudflareDomainPrefix(e.target.value)}
-                      />
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        <input
+                          style={{ flex: '1 1 0', minWidth: 0 }}
+                          value={cloudflareDomainPrefix}
+                          placeholder={t('fileViewer.cloudflareDomainPrefixPlaceholder')}
+                          onChange={(e) => setCloudflareDomainPrefix(e.target.value)}
+                        />
+                        {DEPLOY_SUBDOMAIN_SUFFIX ? (
+                          <span style={{ color: 'var(--text-muted)', fontSize: 13, whiteSpace: 'nowrap' }}>
+                            .{DEPLOY_SUBDOMAIN_SUFFIX}.
+                          </span>
+                        ) : null}
+                      </span>
                     </label>
                     <div className="deploy-field-control">
                       <span className="deploy-field-title-row">

@@ -577,7 +577,7 @@ function normalizeCloudflarePagesDeploySelection(input: unknown): CloudflarePage
     throw new DeployError('Select a valid Cloudflare domain for the custom domain.', 400, undefined, 'CF_ZONE_INVALID');
   }
   if (!domainPrefix) {
-    throw new DeployError('Enter a valid subdomain prefix, for example "demo".', 400, undefined, 'CF_SUBDOMAIN_INVALID');
+    throw new DeployError('Enter a valid subdomain prefix, for example "demo" or "pantene.od".', 400, undefined, 'CF_SUBDOMAIN_INVALID');
   }
   return {
     zoneId: rawZoneId,
@@ -1996,8 +1996,8 @@ function isValidCloudflareZoneName(raw: unknown) {
 
 function normalizeCloudflareDomainPrefix(raw: unknown) {
   const prefix = String(raw || '').trim().toLowerCase();
-  if (!prefix || prefix === '@' || prefix.includes('.') || prefix.includes('*')) return '';
-  return /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(prefix) ? prefix : '';
+  if (!prefix) return '';
+  return prefix.split('.').every((label) => /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(label)) ? prefix : '';
 }
 
 function cloudflarePagesDnsMarker(projectId: string, projectName: string, pagesTarget: string) {

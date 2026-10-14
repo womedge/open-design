@@ -1508,12 +1508,91 @@ describe('cloudflare pages deploys', () => {
       cloudflarePages: {
         zoneId: 'zone-1',
         zoneName: 'example.com',
-        domainPrefix: 'bad.prefix',
+        domainPrefix: 'bad..prefix',
       },
       files: [],
     })).rejects.toThrow(/valid subdomain prefix/i);
 
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it.each(['.od', 'od.', 'a..b'])('rejects invalid custom-domain prefix %s', async (domainPrefix) => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal('fetch', fetchMock);
+    await expect(deployToCloudflarePages({
+      config: { token: 'cloudflare-token-secret', accountId: 'account_123', projectName: 'demo-pages' },
+      projectId: 'project-1',
+      cloudflarePages: { zoneId: 'zone-1', zoneName: 'womedge.com', domainPrefix },
+      files: [],
+    })).rejects.toThrow(/valid subdomain prefix/i);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('creates the DNS CNAME and attaches the Pages domain with the full multi-label hostname', async () => {
+    const calls: Array<{ url: string; method: string; body?: any }> = [];
+    const json = (result: unknown) => new Response(JSON.stringify({ success: true, result }), {
+      status: 200,
+      headers: { 'content-type': 'application/json' },
+    });
+    const fetchMock = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      const { url, method } = customDomainRequestInfo(input, init);
+      calls.push({ url, method, body: init?.body && typeof init.body === 'string' ? JSON.parse(init.body) : undefined });
+      if (url.endsWith('/pages/projects/demo-pages') && method === 'GET') return json({ name: 'demo-pages' });
+      if (url.endsWith('/upload-token')) return json({ jwt: 'pages-upload-jwt' });
+      if (url.endsWith('/check-missing')) return json([]);
+      if (url.endsWith('/upsert-hashes')) return json(null);
+      if (url.endsWith('/demo-pages/deployments') && method === 'POST') {
+        return json({ id: 'dep_1', url: 'https://d34527d9.demo-pages.pages.dev' });
+      }
+      if (url === 'https://demo-pages.pages.dev' && method === 'HEAD') return new Response('', { status: 200 });
+      if (url.endsWith('/zones/zone-1') && method === 'GET') {
+        return json({ id: 'zone-1', name: 'womedge.com', status: 'active', type: 'full' });
+      }
+      if (url.includes('/zones/zone-1/dns_records?') && method === 'GET') return json([]);
+      if (url.endsWith('/zones/zone-1/dns_records') && method === 'POST') {
+        return json({ id: 'dns-1', ...JSON.parse(String(init?.body)) });
+      }
+      if (url.endsWith('/domains/pantene.od.womedge.com') && method === 'GET') {
+        return new Response(JSON.stringify({ success: false, errors: [{ message: 'not found' }] }), {
+          status: 404,
+          headers: { 'content-type': 'application/json' },
+        });
+      }
+      if (url.endsWith('/demo-pages/domains') && method === 'POST') {
+        return json({ name: 'pantene.od.womedge.com', status: 'active' });
+      }
+      if (url === 'https://pantene.od.womedge.com' && method === 'HEAD') return new Response('', { status: 200 });
+      throw new Error(`Unexpected fetch: ${method} ${url}`);
+    });
+    vi.stubGlobal('fetch', fetchMock);
+
+    const result = await deployToCloudflarePages({
+      config: { token: 'cloudflare-token-secret', accountId: 'account_123', projectName: 'demo-pages' },
+      projectId: 'project-1',
+      cloudflarePages: { zoneId: 'zone-1', zoneName: 'womedge.com', domainPrefix: 'pantene.od' },
+      files: [{ file: 'index.html', data: Buffer.from('hello index'), contentType: 'text/html', sourcePath: 'index.html' }],
+    });
+
+    const dnsLookup = calls.find((c) => c.url.includes('/dns_records?'));
+    expect(dnsLookup?.url).toContain('name=pantene.od.womedge.com');
+    const dnsCreate = calls.find((c) => c.url.endsWith('/zones/zone-1/dns_records') && c.method === 'POST');
+    expect(dnsCreate?.body).toMatchObject({
+      type: 'CNAME',
+      name: 'pantene.od.womedge.com',
+      content: 'demo-pages.pages.dev',
+    });
+    const attach = calls.find((c) => c.url.endsWith('/demo-pages/domains') && c.method === 'POST');
+    expect(attach?.body).toEqual({ name: 'pantene.od.womedge.com' });
+    expect(result).toMatchObject({
+      cloudflarePages: {
+        customDomain: {
+          hostname: 'pantene.od.womedge.com',
+          url: 'https://pantene.od.womedge.com',
+          domainPrefix: 'pantene.od',
+          dnsStatus: 'created',
+        },
+      },
+    });
   });
 
   it('rejects stale Cloudflare zone selections before creating a Pages deployment', async () => {

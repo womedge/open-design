@@ -430,7 +430,7 @@ describe('deploy provider routes', () => {
             cloudflarePages: {
               zoneId: 'zone-1',
               zoneName: 'example.com',
-              domainPrefix: 'bad.prefix',
+              domainPrefix: 'bad..prefix',
             },
           }),
         });

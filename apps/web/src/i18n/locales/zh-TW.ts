@@ -3666,7 +3666,7 @@ export const zhTW: Dict = {
   "fileViewer.cloudflareDomainPrefixLabel": "子網域前綴",
   "fileViewer.cloudflareDomainPrefixPlaceholder": "demo",
   "fileViewer.cloudflareDomainPrefixInvalid":
-    "僅使用一個 DNS 標籤：小寫字母、數字與連字號。",
+    "請只填名稱，用小寫字母、數字與連字號，例如 pantene；網址會自動變成 pantene.od.womedge.com",
   "fileViewer.cloudflareHostnamePreview": "自訂網域預覽：{hostname}",
   "fileViewer.cloudflareCustomDomainHint":
     "可選：綁定自訂網域。不填也會產生 pages.dev 連結。",

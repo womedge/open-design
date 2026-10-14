@@ -18,6 +18,12 @@ export const DOCUMENT_TITLE = BRAND_NAME ? `${BRAND_NAME} · OpenDesign` : 'Open
 export const FAVICON = BRAND_NAME ? '/brand-mark.svg' : '/app-icon.png';
 
 /**
+ * Fixed sub-label the Cloudflare Pages deploy dialog appends to the typed
+ * name (`pantene` -> `pantene.od.<zone>`). Empty in stock builds.
+ */
+export const DEPLOY_SUBDOMAIN_SUFFIX = BRAND_NAME ? 'od' : '';
+
+/**
  * Mentions that refer to the upstream OpenDesign project or its hosted
  * service rather than to this product. They keep the original name.
  */

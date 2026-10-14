@@ -8,6 +8,7 @@
 
 import { coalescedGet, evictCoalescedGet } from '../lib/coalesced-get';
 import { isDaemonProxyConnectionFailure } from '../runtime/daemon-proxy-failure';
+import { boundMessageForPersist } from '../runtime/chat/bound-persisted-events';
 import { BackoffController, type BackoffOptions } from '../lib/backoff';
 import { markProjectCreatedByViewer } from '../collab/useProjectCollab';
 import {
@@ -1502,6 +1503,31 @@ export interface SaveMessageOptions {
   keepalive?: boolean;
 }
 
+/** Daemon JSON body limit is 4 MB; stay clear of it. */
+export const SAVE_MESSAGE_MAX_BODY_BYTES = 3.5 * 1024 * 1024;
+
+// Bodies the daemon already refused (413) or we refused to send, per message.
+// An identical payload is not re-sent; the next change to the message
+// produces a different body and is tried again. Warn once per message.
+const rejectedSaveBodies = new Map<string, string>();
+const warnedOversizedSaves = new Set<string>();
+
+function bodySignature(body: string): string {
+  return `${body.length}:${body.slice(-96)}`;
+}
+
+function rememberRejectedSave(key: string, signature: string, reason: string): void {
+  rejectedSaveBodies.set(key, signature);
+  if (rejectedSaveBodies.size > 200) {
+    const oldest = rejectedSaveBodies.keys().next().value;
+    if (oldest !== undefined) rejectedSaveBodies.delete(oldest);
+  }
+  if (!warnedOversizedSaves.has(key)) {
+    warnedOversizedSaves.add(key);
+    console.warn(`[saveMessage] not persisting message ${key}: ${reason}`);
+  }
+}
+
 export async function saveMessage(
   projectId: string,
   conversationId: string,
@@ -1509,11 +1535,21 @@ export async function saveMessage(
   options: SaveMessageOptions = {},
 ): Promise<ChatMessage | null> {
   try {
+    // Only the persisted copy is shortened (same budget the daemon stores
+    // with); the rendered in-memory message keeps its full payloads.
     const body = {
-      ...message,
+      ...boundMessageForPersist(message),
       ...(options.telemetryFinalized ? { telemetryFinalized: true } : {}),
       ...(options.createOnly ? { createOnly: true } : {}),
     };
+    const serialized = JSON.stringify(body);
+    const rejectKey = `${projectId}/${conversationId}/${message.id}`;
+    const signature = bodySignature(serialized);
+    if (rejectedSaveBodies.get(rejectKey) === signature) return null;
+    if (serialized.length > SAVE_MESSAGE_MAX_BODY_BYTES) {
+      rememberRejectedSave(rejectKey, signature, `payload ${serialized.length} bytes exceeds the safe limit`);
+      return null;
+    }
     const response = await fetch(
       `/api/projects/${encodeURIComponent(projectId)}/conversations/${encodeURIComponent(conversationId)}/messages/${encodeURIComponent(message.id)}`,
       {
@@ -1524,11 +1560,16 @@ export async function saveMessage(
             ? workspaceProjectHeaders(options.workspaceContext)
             : {}),
         },
-        body: JSON.stringify(body),
+        body: serialized,
         ...(options.keepalive ? { keepalive: true } : {}),
       },
     );
+    if (response.status === 413) {
+      rememberRejectedSave(rejectKey, signature, 'daemon answered 413 payload too large');
+      return null;
+    }
     if (!response.ok) return null;
+    rejectedSaveBodies.delete(rejectKey);
     // The stored row, which a create-only claim may have kept from an earlier
     // writer. Callers that care compare it against what they sent.
     const saved = (await response.json()) as { message?: ChatMessage };

@@ -2571,3 +2571,49 @@ describe('listTemplates request coalescing', () => {
     expect(reads).toBe(2);
   });
 });
+
+describe('saveMessage oversized payloads', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it('shrinks screenshot tool_results so the PUT body fits the daemon limit', async () => {
+    const { saveMessage } = await import('../../src/state/projects');
+    const fetchMock = vi.fn<typeof fetch>(async () => Response.json({ message: { id: 'a1' } }));
+    vi.stubGlobal('fetch', fetchMock);
+    const events = Array.from({ length: 30 }, (_, i) => ({
+      kind: 'tool_result', toolUseId: `t${i}`, content: 'A'.repeat(250_000), isError: false,
+    }));
+    await saveMessage('p-shrink', 'c', { id: 'a1', role: 'assistant', content: '', events } as never, { telemetryFinalized: true });
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const body = String(fetchMock.mock.calls[0]?.[1]?.body);
+    expect(body.length).toBeLessThan(3.5 * 1024 * 1024);
+    expect(JSON.parse(body).telemetryFinalized).toBe(true);
+  });
+
+  it('does not re-send an identical payload after a 413, but retries once it changes', async () => {
+    const { saveMessage } = await import('../../src/state/projects');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const fetchMock = vi.fn<typeof fetch>(async () => new Response('too big', { status: 413 }));
+    vi.stubGlobal('fetch', fetchMock);
+    const msg = { id: 'a2', role: 'assistant', content: 'one' } as never;
+    for (let i = 0; i < 5; i += 1) expect(await saveMessage('p-413', 'c', msg)).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(warn).toHaveBeenCalledTimes(1);
+    await saveMessage('p-413', 'c', { id: 'a2', role: 'assistant', content: 'two' } as never);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+    expect(warn).toHaveBeenCalledTimes(1);
+    warn.mockRestore();
+  });
+
+  it('refuses to send a body still over the safe limit and warns once', async () => {
+    const { saveMessage } = await import('../../src/state/projects');
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const fetchMock = vi.fn<typeof fetch>(async () => Response.json({}));
+    vi.stubGlobal('fetch', fetchMock);
+    const msg = { id: 'a3', role: 'assistant', content: 'x'.repeat(4 * 1024 * 1024) } as never;
+    await saveMessage('p-big', 'c', msg);
+    await saveMessage('p-big', 'c', msg);
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(warn).toHaveBeenCalledTimes(1);
+    warn.mockRestore();
+  });
+});

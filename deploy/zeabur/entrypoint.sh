@@ -12,9 +12,10 @@
 # container-exits.log, then exit with the same code so a crash still looks
 # like a crash. Output is still mirrored to the container's stdout.
 #
-# Optional persistence: set CLAUDE_CONFIG_DIR / OD_USER_STATE_DIR to paths on
-# the $OD_DATA_DIR volume; the root phase pre-creates them with the right owner
-# and re-copies the baked CLAUDE.md into CLAUDE_CONFIG_DIR each boot.
+# Optional persistence: set CLAUDE_CONFIG_DIR / CODEX_HOME / OD_USER_STATE_DIR
+# to paths on the $OD_DATA_DIR volume; the root phase pre-creates them with the
+# right owner and re-copies the baked CLAUDE.md / AGENTS.md into the first two
+# each boot.
 
 if [ "$(id -u)" = "0" ]; then
   set -e
@@ -22,7 +23,7 @@ if [ "$(id -u)" = "0" ]; then
   # Create the persistent agent/user-state dirs (and any missing parents) first,
   # so the recursive chown of $OD_DATA_DIR below covers them when they live
   # under it; dirs outside it only get their leaf chowned afterwards.
-  for dir in "${CLAUDE_CONFIG_DIR:-}" "${OD_USER_STATE_DIR:-}"; do
+  for dir in "${CLAUDE_CONFIG_DIR:-}" "${CODEX_HOME:-}" "${OD_USER_STATE_DIR:-}"; do
     [ -n "$dir" ] && mkdir -p "$dir"
   done
   for dir in "$OD_DATA_DIR" /app/.od "$HOME"; do
@@ -30,7 +31,7 @@ if [ "$(id -u)" = "0" ]; then
     mkdir -p "$dir"
     chown -R open-design:open-design "$dir"
   done
-  for dir in "${CLAUDE_CONFIG_DIR:-}" "${OD_USER_STATE_DIR:-}"; do
+  for dir in "${CLAUDE_CONFIG_DIR:-}" "${CODEX_HOME:-}" "${OD_USER_STATE_DIR:-}"; do
     [ -n "$dir" ] && chown open-design:open-design "$dir"
   done
   # With CLAUDE_CONFIG_DIR set (pointed at the volume so settings, --resume
@@ -40,6 +41,10 @@ if [ "$(id -u)" = "0" ]; then
   if [ -n "${CLAUDE_CONFIG_DIR:-}" ] && [ -f "$HOME/.claude/CLAUDE.md" ]; then
     cp -f "$HOME/.claude/CLAUDE.md" "$CLAUDE_CONFIG_DIR/CLAUDE.md"
     chown open-design:open-design "$CLAUDE_CONFIG_DIR/CLAUDE.md"
+  fi
+  if [ -n "${CODEX_HOME:-}" ] && [ -f "$HOME/.codex/AGENTS.md" ]; then
+    cp -f "$HOME/.codex/AGENTS.md" "$CODEX_HOME/AGENTS.md"
+    chown open-design:open-design "$CODEX_HOME/AGENTS.md"
   fi
   exec su-exec open-design /bin/bash "$0" "$@"
 fi

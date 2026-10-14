@@ -94,7 +94,10 @@ FROM ${RUNTIME_IMAGE}
 #   1. Claude Code from Anthropic's signed apk repository, with the Alpine
 #      runtime deps from https://code.claude.com/docs/en/setup. Authenticate
 #      with CLAUDE_CODE_OAUTH_TOKEN (from `claude setup-token`).
-#   2. OpenCode from npm (musl build), so API-key (BYOK) runs work.
+#   2. OpenCode from npm (musl build), so API-key (BYOK) runs work, and the
+#      OpenAI Codex CLI from npm (its linux-x64 package is the static
+#      x86_64-unknown-linux-musl build). Point CODEX_HOME at the volume so the
+#      `codex login --device-auth` login (auth.json) survives restarts.
 #   3. A real home directory for the open-design user, plus everyday CLI
 #      tools agents reach for (curl, file, python3, jq).
 #   4. entrypoint.sh starts as root, fixes ownership of writable paths, then
@@ -110,16 +113,23 @@ FROM ${RUNTIME_IMAGE}
 #      lines) under $OD_DATA_DIR/diagnostics, since Zeabur keeps few logs.
 ARG CLAUDE_CODE_APK_CHANNEL=stable
 ARG OPENCODE_VERSION=1.18.35
-RUN apk add --no-cache tini poppler-utils bash git su-exec libgcc libstdc++ ripgrep \
+ARG CODEX_VERSION=0.162.1
+# The channel's package index: ADD re-downloads it on every build and only
+# reuses the cache when its content is unchanged, so a new Claude Code release
+# on the channel rebuilds the layer below instead of reusing an older one.
+ADD https://downloads.claude.ai/claude-code/apk/${CLAUDE_CODE_APK_CHANNEL}/x86_64/APKINDEX.tar.gz /tmp/claude-apkindex.tgz
+RUN rm -f /tmp/claude-apkindex.tgz && \
+    apk add --no-cache tini poppler-utils bash git su-exec libgcc libstdc++ ripgrep \
       curl file python3 jq && \
     wget -qO /etc/apk/keys/claude-code.rsa.pub https://downloads.claude.ai/keys/claude-code.rsa.pub && \
     echo "395759c1f7449ef4cdef305a42e820f3c766d6090d142634ebdb049f113168b6  /etc/apk/keys/claude-code.rsa.pub" | sha256sum -c - && \
     echo "https://downloads.claude.ai/claude-code/apk/${CLAUDE_CODE_APK_CHANNEL}" >> /etc/apk/repositories && \
     apk add --no-cache claude-code && \
     claude --version && \
-    npm install -g "opencode-ai@${OPENCODE_VERSION}" && \
+    npm install -g "opencode-ai@${OPENCODE_VERSION}" "@openai/codex@${CODEX_VERSION}" && \
     npm cache clean --force && \
     opencode --version && \
+    codex --version && \
     addgroup -S -g 1001 open-design && \
     adduser -S -D -h /home/open-design -u 1001 -G open-design open-design
 
@@ -140,9 +150,11 @@ ENV CHROME_PATH=/usr/bin/chromium \
     NODE_PATH=/usr/local/lib/node_modules
 COPY --chmod=0755 deploy/zeabur/od-screenshot /usr/local/bin/od-screenshot
 # User-level instructions: Claude Code reads ~/.claude/CLAUDE.md; OpenCode
-# reads ~/.config/opencode/AGENTS.md (it no longer falls back to CLAUDE.md).
+# reads ~/.config/opencode/AGENTS.md (it no longer falls back to CLAUDE.md);
+# Codex reads $CODEX_HOME/AGENTS.md (default ~/.codex).
 COPY --chown=open-design:open-design deploy/zeabur/agent-instructions.md /home/open-design/.claude/CLAUDE.md
 COPY --chown=open-design:open-design deploy/zeabur/agent-instructions.md /home/open-design/.config/opencode/AGENTS.md
+COPY --chown=open-design:open-design deploy/zeabur/agent-instructions.md /home/open-design/.codex/AGENTS.md
 
 WORKDIR /app
 COPY --from=build --chown=open-design:open-design /app/deploy/daemon ./apps/daemon

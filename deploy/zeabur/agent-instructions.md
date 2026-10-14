@@ -5,3 +5,4 @@
 - 要寫腳本時，`require("playwright-core")` 可直接用（已全域安裝），啟動時指定 `executablePath: process.env.CHROME_PATH` 並加 `--no-sandbox`。
 - 另有 Pillow、numpy、fontTools（`pyftsubset`）、ImageMagick（`magick`）、ffmpeg、opencc、zip、gh 可用。
 - 你沒有權限安裝系統套件：不要執行 `npx playwright install`、`apk add` 或下載其他瀏覽器，優先用上面已有的工具。
+- 刪除檔案時逐一寫出完整路徑（例如 `rm /完整/路徑/a.png`），不要用 `*` 這類萬用字元，否則會被安全機制擋下。

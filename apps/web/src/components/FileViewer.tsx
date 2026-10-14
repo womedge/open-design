@@ -770,6 +770,21 @@ export function cloudflareNameFromHostname(
   return name && !name.includes('.') ? name : null;
 }
 
+// Branded build: one project = one custom domain. Bare name from the newest
+// Cloudflare Pages deployment of ANY file in the project that has one, else null.
+export function cloudflareProjectDomainName(
+  items: WebDeploymentInfo[],
+  suffix = DEPLOY_SUBDOMAIN_SUFFIX,
+): string | null {
+  for (const item of [...items].sort(compareDeploymentsByNewest)) {
+    if (item.providerId !== CLOUDFLARE_PAGES_PROVIDER_ID) continue;
+    const domain = item.cloudflarePages?.customDomain;
+    const name = cloudflareNameFromHostname(domain?.hostname, domain?.zoneName, suffix);
+    if (name) return name;
+  }
+  return null;
+}
+
 // Branded build: per-project default name = first 8 chars of the project id.
 export function cloudflareDefaultName(projectId: string): string {
   return projectId.slice(0, 8).toLowerCase();
@@ -9438,12 +9453,10 @@ function HtmlViewer({
     if (requestSeq !== deployProviderLoadSeqRef.current) {
       return { config: null, currentDeployment: null };
     }
-    const previousDomain = nextDeploymentsByProvider[CLOUDFLARE_PAGES_PROVIDER_ID]?.cloudflarePages?.customDomain;
     syncDeployFormFromConfig(
       providerId,
       config,
-      cloudflareNameFromHostname(previousDomain?.hostname, previousDomain?.zoneName)
-        ?? cloudflareDefaultName(projectId),
+      cloudflareProjectDomainName(deployments) ?? cloudflareDefaultName(projectId),
     );
     setDeploymentsByProvider(nextDeploymentsByProvider);
     setDeployment(currentDeployment ?? null);

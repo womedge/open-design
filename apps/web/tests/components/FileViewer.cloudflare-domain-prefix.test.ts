@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   cloudflareDefaultName,
+  cloudflareProjectDomainName,
   cloudflareNameFromHostname,
   cloudflarePagesSelectionFor,
   cloudflarePrefixForDeploy,
@@ -46,5 +47,25 @@ describe('Cloudflare custom-domain prefix input', () => {
 
   it('branded: default name is the first 8 chars of the project id, lowercased', () => {
     expect(cloudflareDefaultName('8DA2BA36-b02d-4c1e-9f00-123456789abc')).toBe('8da2ba36');
+  });
+
+  it('branded: reuses the project name from any file Cloudflare deployment, newest wins', () => {
+    const dep = (fileName: string, hostname: string | null, updatedAt: number, providerId = 'cloudflare-pages') =>
+      ({
+        fileName,
+        providerId,
+        updatedAt,
+        createdAt: updatedAt,
+        cloudflarePages: hostname ? { customDomain: { hostname, zoneName: 'womedge.com' } } : undefined,
+      }) as never;
+    expect(cloudflareProjectDomainName([dep('index.html', 'dentsu.od.womedge.com', 1)], 'od')).toBe('dentsu');
+    expect(
+      cloudflareProjectDomainName([
+        dep('index.html', 'old.od.womedge.com', 1),
+        dep('mockup/a1.html', 'dentsu.od.womedge.com', 2),
+      ], 'od'),
+    ).toBe('dentsu');
+    expect(cloudflareProjectDomainName([dep('index.html', null, 1)], 'od')).toBeNull();
+    expect(cloudflareProjectDomainName([dep('index.html', 'x.od.womedge.com', 1, 'vercel-self')], 'od')).toBeNull();
   });
 });

@@ -69,7 +69,8 @@ const SUPPORT_WORD: Record<Locale, string> = {
   'tr': 'destek',
   'uk': 'підтримки',
   'zh-CN': '支持',
-  'zh-TW': '支援',
+  // fork: zh-TW tells users to contact the admin (see utils/cloudPromo.ts)
+  'zh-TW': '管理員',
 };
 
 /**

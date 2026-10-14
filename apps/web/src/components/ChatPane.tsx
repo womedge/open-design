@@ -188,6 +188,7 @@ import { UpgradeCard } from './chat/UpgradeCard';
 import { SupportDialog } from './chat/SupportDialog';
 import { Toast } from './Toast';
 import { supportChannels } from './chat/support-channels';
+import { HIDE_CLOUD_PROMO, adminContactMailto } from '../utils/cloudPromo';
 import { ExportLogsAction } from './chat/ExportLogsAction';
 import type { RecoveryActionBlockReason } from '../runtime/chat/recovery-gating';
 import { repoConnectCopy } from './design-system-github-evidence';
@@ -2504,7 +2505,7 @@ export function ChatPane({
   const failedRunUsesCloud = retryAssistant?.agentId === 'amr';
   const showCloudRetry = Boolean(retryAssistant && failedRunUsesCloud && onRetry);
   const showCloudSwitchCta = Boolean(
-    retryAssistant && !failedRunUsesCloud
+    !HIDE_CLOUD_PROMO && retryAssistant && !failedRunUsesCloud
     && (onSwitchToAmrAndRetry || onOpenAmrSettings),
   );
   const [supportDialogOpen, setSupportDialogOpen] = useState(false);
@@ -4541,12 +4542,15 @@ export function ChatPane({
                           variant="secondary"
                           data-testid="chat-error-contact-support"
                           data-tooltip={t('chat.runError.contactSupportCta')}
-                          onClick={() => setSupportDialogOpen(true)}
+                          onClick={() => {
+                            if (HIDE_CLOUD_PROMO) window.open(adminContactMailto(), '_self');
+                            else setSupportDialogOpen(true);
+                          }}
                         >
                           <Icon name="headset" size={11} />
                           {t('chat.runError.contactSupportCta')}
                         </RunErrorCardAction>
-                        <ExportLogsAction />
+                        {HIDE_CLOUD_PROMO ? null : <ExportLogsAction />}
                         {showCloudRetry && retryAssistant && onRetry ? (
                           <RunErrorCardAction
                             type="button"

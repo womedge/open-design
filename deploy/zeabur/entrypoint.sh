@@ -12,7 +12,8 @@
 # container-exits.log, then exit with the same code so a crash still looks
 # like a crash. Output is still mirrored to the container's stdout.
 #
-# Optional persistence: set CLAUDE_CONFIG_DIR / CODEX_HOME / OD_USER_STATE_DIR
+# Optional persistence: set CLAUDE_CONFIG_DIR / CODEX_HOME / XDG_DATA_HOME (OpenCode
+# keeps its sessions there) / OD_USER_STATE_DIR
 # to paths on the $OD_DATA_DIR volume; the root phase pre-creates them with the
 # right owner and re-copies the baked CLAUDE.md / AGENTS.md into the first two
 # each boot.
@@ -23,7 +24,7 @@ if [ "$(id -u)" = "0" ]; then
   # Create the persistent agent/user-state dirs (and any missing parents) first,
   # so the recursive chown of $OD_DATA_DIR below covers them when they live
   # under it; dirs outside it only get their leaf chowned afterwards.
-  for dir in "${CLAUDE_CONFIG_DIR:-}" "${CODEX_HOME:-}" "${OD_USER_STATE_DIR:-}"; do
+  for dir in "${CLAUDE_CONFIG_DIR:-}" "${CODEX_HOME:-}" "${XDG_DATA_HOME:-}" "${OD_USER_STATE_DIR:-}"; do
     [ -n "$dir" ] && mkdir -p "$dir"
   done
   for dir in "$OD_DATA_DIR" /app/.od "$HOME"; do
@@ -31,7 +32,7 @@ if [ "$(id -u)" = "0" ]; then
     mkdir -p "$dir"
     chown -R open-design:open-design "$dir"
   done
-  for dir in "${CLAUDE_CONFIG_DIR:-}" "${CODEX_HOME:-}" "${OD_USER_STATE_DIR:-}"; do
+  for dir in "${CLAUDE_CONFIG_DIR:-}" "${CODEX_HOME:-}" "${XDG_DATA_HOME:-}" "${OD_USER_STATE_DIR:-}"; do
     [ -n "$dir" ] && chown open-design:open-design "$dir"
   done
   # With CLAUDE_CONFIG_DIR set (pointed at the volume so settings, --resume

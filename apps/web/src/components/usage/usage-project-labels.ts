@@ -50,11 +50,14 @@ export function buildProjectLabels(
 ): Map<string, string> {
   const labels = new Map<string, string>();
   const groups = new Map<string, string[]>();
+  const deleted = projects.filter((p) => p.name === null && p.id !== USAGE_NO_PROJECT_ID);
+  const tellDeletedApart = new Set(deleted.map((p) => p.id)).size > 1;
   for (const p of projects) {
     if (p.id === USAGE_NO_PROJECT_ID) {
       labels.set(p.id, t('usage.noProject'));
     } else if (p.name === null) {
-      labels.set(p.id, t('usage.deletedProject'));
+      // Several deleted projects read the same; the id tail tells them apart.
+      labels.set(p.id, tellDeletedApart ? `${t('usage.deletedProject')} · ${p.id.slice(-4)}` : t('usage.deletedProject'));
     } else {
       labels.set(p.id, p.name);
       const ids = groups.get(p.name) ?? [];

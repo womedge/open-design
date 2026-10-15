@@ -288,4 +288,30 @@ describe('UsageView', () => {
     fireEvent.click(within(people[0]!).getByRole('button'));
     expect(within(people[0]!).getByText('Website Clone · 10/14')).toBeTruthy();
   });
+
+  it('shows the top 8 projects, then expands and collapses the rest', async () => {
+    const many = Array.from({ length: 11 }, (_, i) => ({
+      projectId: `p${i}`, projectName: `Project ${i}`, costUsd: 11 - i, runs: 1,
+    }));
+    mockFetch((url) => (url.startsWith('/api/usage') ? json(summary({ projects: many })) : json({ projects: [] })));
+    renderView();
+    const toggle = await screen.findByTestId('usage-projects-toggle');
+    expect(toggle.textContent).toBe('顯示全部 11 個');
+    expect(toggle.getAttribute('aria-expanded')).toBe('false');
+    const more = document.getElementById('usage-projects-more')!;
+    expect(more.hasAttribute('inert')).toBe(true);
+    fireEvent.click(toggle);
+    expect(toggle.textContent).toBe('收起');
+    expect(more.hasAttribute('inert')).toBe(false);
+    expect(screen.getAllByTestId('usage-project-row')).toHaveLength(11);
+    fireEvent.click(toggle);
+    expect(toggle.textContent).toBe('顯示全部 11 個');
+  });
+
+  it('has no expand button for 8 projects or fewer', async () => {
+    mockFetch(() => json(summary()));
+    renderView();
+    await screen.findByTestId('usage-kpi-cost');
+    expect(screen.queryByTestId('usage-projects-toggle')).toBeNull();
+  });
 });

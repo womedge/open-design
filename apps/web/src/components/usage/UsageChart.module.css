@@ -68,7 +68,7 @@
   padding-top: 10px;
 }
 .chart {
-  --plot-h: clamp(170px, 26vh, 236px);
+  --plot-h: clamp(190px, 30vh, 260px);
   flex: 1;
   display: flex;
   gap: 10px;

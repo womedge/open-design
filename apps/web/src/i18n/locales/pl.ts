@@ -910,6 +910,8 @@ export const pl: Dict = {
   "usage.deletedProject": "Deleted project",
   "usage.unpriced": "Unpriced: {models}",
   "usage.noProject": "No project",
+  "usage.showAllProjects": "Show all {n}",
+  "usage.collapse": "Collapse",
   "usage.export": "Export",
   "usage.exportFailed": "Export failed",
   "usage.retry": "Retry",

@@ -5,6 +5,7 @@ import { Button, Select } from '@open-design/components';
 
 import { useT } from '../../i18n';
 import { Icon } from '../Icon';
+import { Collapsible } from './Collapsible';
 import { UsageChart } from './UsageChart';
 import { UsageDateRangePicker } from './UsageDateRangePicker';
 import { UsageDetail } from './UsageDetail';
@@ -82,6 +83,7 @@ export function UsageView() {
   const [exportFailed, setExportFailed] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [reload, setReload] = useState(0);
+  const [projectsExpanded, setProjectsExpanded] = useState(false);
   // Creation dates come from the app's own project list, only to tell apart
   // projects that share a name; the usage API is not involved.
   const [createdAt, setCreatedAt] = useState<ReadonlyMap<string, number>>(new Map());
@@ -312,9 +314,14 @@ export function UsageView() {
             />
           </div>
 
-          <div className={styles.split}>
+          <div className={`${styles.split} ${projectsExpanded ? styles.splitExpanded : ''}`}>
             <UsageChart summary={summary} showCompare={showCompare} modelColors={modelColors} />
-            <ProjectList summary={summary} projectLabels={projectLabels} />
+            <ProjectList
+              summary={summary}
+              projectLabels={projectLabels}
+              expanded={projectsExpanded}
+              onToggle={() => setProjectsExpanded((v) => !v)}
+            />
           </div>
 
           <UsagePeople summary={summary} modelColors={modelColors} projectLabels={projectLabels} />
@@ -417,35 +424,59 @@ function Kpi({
   );
 }
 
+const PROJECT_ROWS_SHOWN = 8;
+
 function ProjectList({
   summary,
   projectLabels,
+  expanded,
+  onToggle,
 }: {
   summary: UsageSummaryResponse;
   projectLabels: ReadonlyMap<string, string>;
+  expanded: boolean;
+  onToggle: () => void;
 }) {
   const t = useT();
   const total = summary.totals.costUsd;
+  const head = summary.projects.slice(0, PROJECT_ROWS_SHOWN);
+  const rest = summary.projects.slice(PROJECT_ROWS_SHOWN);
+  const row = (p: UsageSummaryResponse['projects'][number]) => (
+    <div key={p.projectId} className={styles.projectRow} data-testid="usage-project-row">
+      <span className={styles.projectName}>{projectLabels.get(p.projectId) ?? projectLabel(p.projectId, p.projectName, t)}</span>
+      <span className={styles.projectRuns}>{formatInt(p.runs)} {t('usage.runsUnit')}</span>
+      <span className={styles.projectFigures}>
+        <span className={styles.projectCost}>{formatUsd(p.costUsd)}</span>{' '}
+        <span className={styles.projectShare}>{formatShare(p.costUsd, total)}</span>
+      </span>
+      <span className={styles.track} aria-hidden="true">
+        <span className={styles.fill} style={{ width: `${total > 0 ? Math.max(2, (p.costUsd / total) * 100) : 0}%` }} />
+      </span>
+    </div>
+  );
   return (
     <section className={styles.projects} aria-labelledby="usage-projects-title">
       <h2 id="usage-projects-title" className={styles.cardTitle}>{t('usage.projects')}</h2>
       <div className={styles.projectRows}>
-        {summary.projects.map((p) => (
-          <div key={p.projectId} className={styles.projectRow} data-testid="usage-project-row">
-            <span className={styles.projectName}>{projectLabels.get(p.projectId) ?? projectLabel(p.projectId, p.projectName, t)}</span>
-            <span className={styles.projectFigures}>
-              <span className={styles.projectCost}>{formatUsd(p.costUsd)}</span>{' '}
-              <span className={styles.projectShare}>{formatShare(p.costUsd, total)}</span>
-            </span>
-            <span className={styles.projectBar}>
-              <span className={styles.track}>
-                <span className={styles.fill} style={{ width: `${total > 0 ? Math.max(2, (p.costUsd / total) * 100) : 0}%` }} />
-              </span>
-              <span className={styles.projectRuns}>{formatInt(p.runs)} {t('usage.runsUnit')}</span>
-            </span>
-          </div>
-        ))}
+        {head.map(row)}
+        {rest.length > 0 ? (
+          <Collapsible id="usage-projects-more" open={expanded}>
+            <div className={styles.projectRows}>{rest.map(row)}</div>
+          </Collapsible>
+        ) : null}
       </div>
+      {rest.length > 0 ? (
+        <button
+          type="button"
+          className={styles.more}
+          aria-expanded={expanded}
+          aria-controls="usage-projects-more"
+          onClick={onToggle}
+          data-testid="usage-projects-toggle"
+        >
+          {expanded ? t('usage.collapse') : t('usage.showAllProjects', { n: summary.projects.length })}
+        </button>
+      ) : null}
     </section>
   );
 }

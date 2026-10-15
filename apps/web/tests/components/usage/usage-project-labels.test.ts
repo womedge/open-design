@@ -67,4 +67,14 @@ describe('buildProjectLabels', () => {
     expect(labels.get('a')).toBe('X · 10/14');
     expect(labels.get('b')).toBe('X');
   });
+
+  it('tells several deleted projects apart by the tail of their id', () => {
+    const labels = buildProjectLabels(
+      [{ id: 'proj-aaaa3f9a', name: null }, { id: 'proj-bbbb71c2', name: null }],
+      new Map(),
+      t as never,
+    );
+    expect(labels.get('proj-aaaa3f9a')).toBe('已刪除專案 · 3f9a');
+    expect(labels.get('proj-bbbb71c2')).toBe('已刪除專案 · 71c2');
+  });
 });

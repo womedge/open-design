@@ -232,6 +232,10 @@
   align-items: stretch;
   gap: 16px;
 }
+.splitExpanded {
+  /* Expanded project list grows on its own; the chart keeps its height. */
+  align-items: flex-start;
+}
 .projects {
   flex: 1 1 0;
   min-width: min(100%, 280px);
@@ -253,11 +257,12 @@
   font-size: 13px;
 }
 .projectRow {
+  position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-columns: minmax(0, 1fr) auto auto;
   align-items: baseline;
-  gap: 4px 12px;
-  padding: 9px 0;
+  gap: 0 12px;
+  padding: 7px 0 9px;
   border-top: 1px solid var(--border-soft);
 }
 .projectName {
@@ -266,6 +271,7 @@
   overflow-wrap: anywhere;
 }
 .projectFigures {
+  min-width: 84px;
   text-align: right;
   white-space: nowrap;
 }
@@ -277,27 +283,23 @@
 .projectRuns {
   font-size: 12px;
   color: var(--text-soft);
+  white-space: nowrap;
 }
-.projectBar {
-  grid-column: 1 / -1;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
+/* Share as a hairline along the row's bottom edge. */
 .track {
-  flex: 1;
-  height: 6px;
-  border-radius: 3px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 3px;
+  height: 3px;
+  border-radius: 2px;
   background: var(--bg-subtle);
 }
 .fill {
   display: block;
-  height: 6px;
-  border-radius: 3px;
+  height: 3px;
+  border-radius: 2px;
   background: var(--text-strong);
-}
-.projectRuns {
-  white-space: nowrap;
 }
 
 .footnote {
@@ -320,4 +322,27 @@
     transition: none;
     animation: none;
   }
+}
+
+.more {
+  display: block;
+  width: 100%;
+  min-height: 36px;
+  margin: 2px 0 6px;
+  border: 0;
+  border-radius: var(--radius-large);
+  background: transparent;
+  color: var(--text-muted);
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 140ms var(--ease-out);
+}
+.more:hover {
+  background: var(--bg-fill-tertiary);
+}
+.more:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
 }

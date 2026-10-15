@@ -18,11 +18,13 @@ import type { RegisterRoutineRoutesDeps } from './routes/routine.js';
 import type { RegisterRunRoutesDeps } from './routes/runs.js';
 import type { RegisterSocialShareRoutesDeps } from './routes/social-share.js';
 import type { RegisterStaticResourceRoutesDeps } from './routes/static-resource.js';
+import type { RegisterUsageRoutesDeps } from './routes/usage.js';
 import type { RegisterVelaRoutesDeps } from './routes/vela.js';
 import type { RegisterXaiRoutesDeps } from './routes/xai.js';
 
 type AllRegisteredRouteDeps =
   & RegisterActiveContextRoutesDeps
+  & RegisterUsageRoutesDeps
   & RegisterAutomationRoutesDeps
   & RegisterChatRoutesDeps
   & RegisterDeployRoutesDeps

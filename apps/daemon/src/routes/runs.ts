@@ -1,3 +1,4 @@
+import { resolveUsageUser } from '../usage/recorder.js';
 import type { Express, Request, Response } from 'express';
 import type Database from 'better-sqlite3';
 import fs from 'node:fs';
@@ -2827,6 +2828,8 @@ export function registerRunRoutes(app: Express, ctx: RegisterRunRoutesDeps) {
       );
     }
     const resumed = preparedRun.resumed;
+    // Usage attribution: the SSO proxy's email, trusted only off-loopback.
+    if (!run.usageUser) run.usageUser = resolveUsageUser(req);
     const declaredClient = String(req.get('x-od-client') ?? '').toLowerCase();
     if (requestAnalyticsContext?.clientType === 'external_mcp') {
       run.clientType = 'external_mcp';

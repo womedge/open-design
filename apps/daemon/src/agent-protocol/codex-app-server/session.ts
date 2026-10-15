@@ -67,6 +67,8 @@ export interface CodexAppServerSessionOptions {
   prompt: string;
   cwd: string;
   model?: string | null;
+  /** Fired with the model Codex actually resolved (`thread/start` / `thread/resume` result). */
+  onModelResolved?: (model: string) => void;
   reasoning?: string | null;
   serviceTier?: string | null;
   sandboxMode: CodexSandboxMode;
@@ -277,6 +279,7 @@ export function attachCodexAppServerSession(
       ...(patchStreaming ? { config: { 'features.apply_patch_streaming_events': true } } : {}),
     };
     const onThread = (result: JsonObject) => {
+      if (typeof result.model === 'string' && result.model) opts.onModelResolved?.(result.model);
       const thread = isRecord(result.thread) ? result.thread : null;
       const id = typeof thread?.id === 'string' ? thread.id : null;
       if (id) {

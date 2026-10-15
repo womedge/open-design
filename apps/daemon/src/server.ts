@@ -460,6 +460,7 @@ import { attachAcpSession } from './agent-protocol/index.js';
 import { stageAmrImagePaths } from './media/amr-image-staging.js';
 import { ingestRoutineConnectorEvolution } from './automation-routine-evolution.js';
 import { createClaudeStreamHandler } from './runtimes/claude-stream.js';
+import { createRunUsageRecorder } from './usage/recorder.js';
 import { createAgentTitleMarkerStripper } from './title-marker.js';
 import {
   createPanelGrammarStripper,
@@ -910,6 +911,7 @@ import { registerBrowserSessionRoutes } from './routes/browser-sessions.js';
 import { createTerminalService } from './terminals.js';
 import { createBrowserSessionService } from './browser-sessions.js';
 import { registerSocialShareRoutes } from './routes/social-share.js';
+import { registerUsageRoutes } from './routes/usage.js';
 import { registerOpenDesignPublicMetadataRoutes } from './routes/open-design-public-metadata.js';
 import { registerWhatsNewRoutes } from './routes/whats-new.js';
 import { registerMemoryRoutes } from './routes/memory.js';
@@ -8782,6 +8784,7 @@ export async function startServer({
     });
   });
   registerSocialShareRoutes(app, { http: httpDeps });
+  registerUsageRoutes(app, { db, http: httpDeps, paths: pathDeps });
   const projectCreatePreparationTimeoutMs = projectCreatePreparationTimeoutMsFromEnv();
   registerProjectRoutes(app, {
     db,
@@ -12166,6 +12169,16 @@ export async function startServer({
       pendingNativeSessionContinue?.lastInputTokens ?? null,
     );
     const observedInputTokensForSession = physicalSessionUsage.inputTokens;
+    // Token usage statistics: one stored record per assistant message.
+    const usageRecorder = createRunUsageRecorder({
+      db,
+      run,
+      agentId: def.id,
+      getModel: () => run.resolvedModelId ?? safeModel,
+      getSpeed: () => (safeServiceTier === 'priority' ? 'fast' : null),
+      getThreadId: () => capturedSessionId,
+      isResuming: () => agentResumeCtx.isResuming,
+    });
     run.nativeSessionRecovery = initialNativeSessionRecoveryMetadata({
       agent: def,
       supportsSessionResume: agentSupportsSessionResume,
@@ -12673,6 +12686,7 @@ export async function startServer({
     const send = (event, data) => {
       if (event === 'agent' && data?.type === 'usage') {
         physicalSessionUsage.observe(event, data);
+        usageRecorder.observeAgentUsage(data);
       }
       if (
         strategyProtocol
@@ -15580,6 +15594,7 @@ export async function startServer({
           applyClaudeStreamJsonRunBookkeeping(run, ev);
         } catch {}
       }, {
+        onMessageUsage: (usage) => usageRecorder.recordClaude(usage),
         suppressHtmlArtifactsAfterFileWrite: def.id === 'claude',
         ...(observeClaudeNativeChildBehavior
           ? {
@@ -15977,6 +15992,7 @@ export async function startServer({
           agentResumeCtx.isResuming && agentResumeCtx.resumeSessionId
             ? agentResumeCtx.resumeSessionId
             : null,
+        onModelResolved: (resolved) => usageRecorder.setObservedModel(resolved),
         onAgentEvent: (event) => sendAgentEvent(event),
         onCliReady: () => noteCliReadyAt(),
         onSessionReady: () => noteSessionInitDoneAt(),
@@ -17028,6 +17044,8 @@ export async function startServer({
           run.strategyTask = projectStrategyTask(transition.result.task, run.id);
           if (transition.start && transition.prepared?.kind === 'ready') {
             const nextRun = transition.prepared.run;
+            // The continuation is the same logical task: same person pays.
+            if (run.usageUser) nextRun.usageUser = run.usageUser;
             nextRun.strategyTask = projectStrategyTask(transition.result.task, nextRun.id);
             pendingStrategyContinuation = {
               run: nextRun,

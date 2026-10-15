@@ -5,6 +5,7 @@ import { basename } from 'node:path';
 import { runDaemonCliStartup, startDaemonRuntime } from './daemon-startup.js';
 import { runLiveArtifactsMcpServer } from './mcp-live-artifacts-server.js';
 import { runArtifactsCli } from './artifacts-cli.js';
+import { runUsageCli } from './usage/usage-cli.js';
 import { runResource } from './resource-cli.js';
 import { runProjectHandoff } from './handoff-cli.js';
 import { runConnectorsToolCli } from './tools-connectors-cli.js';
@@ -430,6 +431,7 @@ const SUBCOMMAND_MAP = {
   config: runConfig,
   library: runLibrary,
   figma: runFigma,
+  usage: runUsage,
 };
 
 function printStrategyHelp() {
@@ -985,6 +987,9 @@ function printRootHelp() {
 
   od research search --query <text> [--max-sources 5] [--daemon-url <url>]
       Run agent-callable Tavily research through the local daemon.
+
+  od usage <summary|export|backfill|reprice> --from YYYY-MM-DD --to YYYY-MM-DD [options]
+      Token usage and cost statistics (same data as the Usage page).
 
   od plugin <list|info|install|uninstall|apply|doctor|replay|trust> [args]
       Discover, install, and apply plugins through the local daemon.
@@ -1738,6 +1743,11 @@ async function runResearchSearch(rawArgs) {
     process.exit(4);
   }
   process.stdout.write(`${await resp.text()}\n`);
+}
+
+async function runUsage(args) {
+  const { exitCode } = await runUsageCli(args);
+  process.exit(exitCode);
 }
 
 async function runArtifacts(args) {

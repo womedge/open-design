@@ -5,6 +5,7 @@
 // that used to live in localStorage.
 
 import Database from 'better-sqlite3';
+import { migrateUsageTables } from './usage/store.js';
 import path from 'node:path';
 import fs from 'node:fs';
 import { randomUUID } from 'node:crypto';
@@ -97,6 +98,7 @@ export function closeDatabase() {
 }
 
 function migrate(db: SqliteDb): void {
+  migrateUsageTables(db);
   db.exec(`
     CREATE TABLE IF NOT EXISTS projects (
       id TEXT PRIMARY KEY,

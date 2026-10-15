@@ -19,6 +19,7 @@
  * `tool_use` event when that block stops.
  */
 
+import { createClaudeMessageUsageCollector, type ClaudeMessageUsage } from '../usage/claude-message-usage.js';
 import { createRoleMarkerGuard, type RoleMarkerGuard } from '../role-marker-guard.js';
 import {
   createClaudeChildEvidenceCollector,
@@ -112,6 +113,12 @@ export interface ClaudeStreamHandlerOptions {
   suppressForwardedSubagentEvents?: boolean;
   /** 墙上时间。只用来给在途那一行盖一个不动的计时起点;测试注入。 */
   now?: () => number;
+  /**
+   * Per-assistant-message token usage for billing statistics (src/usage). A
+   * side channel on purpose: nothing is added to the SSE/event contracts.
+   * Sub-agent (Task) messages are included.
+   */
+  onMessageUsage?: (usage: ClaudeMessageUsage) => void;
 }
 
 export function createClaudeStreamHandler(
@@ -120,6 +127,9 @@ export function createClaudeStreamHandler(
 ) {
   let buffer = '';
   const now = options.now ?? (() => Date.now());
+  const messageUsage = options.onMessageUsage
+    ? createClaudeMessageUsageCollector(options.onMessageUsage, now)
+    : null;
   const childEvidence = options.onChildRuntimeFact || options.onChildToolRuntimeFact
     ? createClaudeChildEvidenceCollector({
         ...(options.onChildRuntimeFact ? { onFact: options.onChildRuntimeFact } : {}),
@@ -712,10 +722,15 @@ export function createClaudeStreamHandler(
       }
     }
     flushPendingArtifactText();
+    messageUsage?.flush();
   }
 
   function handleObject(obj: unknown) {
     if (!isRecord(obj)) return;
+
+    // Observe BEFORE the forwarded-sub-agent suppression below: sub-agent
+    // messages are billed too.
+    try { messageUsage?.observe(obj); } catch { /* statistics must never break a run */ }
 
     childEvidence?.observe(obj);
     if (

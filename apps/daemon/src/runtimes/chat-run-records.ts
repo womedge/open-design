@@ -187,6 +187,8 @@ export interface ChatRun {
   appliedPluginSnapshotId?: string | null;
   pluginId?: string | null;
   clientType?: 'desktop' | 'web' | 'external_mcp';
+  /** Who started the run (trusted proxy email) or `automatic`; usage statistics attribute cost to it. */
+  usageUser?: string;
   sessionMode?: string | null;
   context?: Record<string, unknown> | null;
   events: RunEventRecord[];

@@ -1,0 +1,418 @@
+{
+  "version": 1,
+  "unit": "USD per 1M tokens",
+  "sources": [
+    {
+      "name": "Anthropic API pricing (Opus 5.5 / Sonnet 5.5 / Haiku 5.5, cache multipliers, fast mode, Haiku 5.5 100k tier)",
+      "url": "https://platform.claude.com/docs/en/about-claude/pricing",
+      "checkedOn": "2026-10-15"
+    },
+    {
+      "name": "OpenAI API pricing (GPT-5/5.x/5.6/6.x, o-series, 272K long-context tier, Fast tier); covers every model in Codex's own catalog (`codex debug models`) except hidden ones",
+      "url": "https://developers.openai.com/api/docs/pricing",
+      "checkedOn": "2026-10-15"
+    },
+    {
+      "name": "Cross-check only: LiteLLM model_prices_and_context_window.json snapshot (not a source of truth)",
+      "url": "https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json",
+      "checkedOn": "2026-10-15"
+    }
+  ],
+  "notes": [
+    "effectiveFrom is the first Asia/Taipei day this price is applied. Launch dates of the models were not verified; they are set to the start of 2026, before any usage of these models can exist. Add a NEW entry with a later effectiveFrom when a vendor changes a price; never edit an old entry (stored costs are never recomputed).",
+    "Claude 1h cache write = 2x input, 5m write = 1.25x input; cache read is 0.05x input on Opus 5.5 / Sonnet 5.5 and 0.1x on Haiku 5.5 (official page footnote 2).",
+    "fastMultiplier applies to every bucket (the official page states cache multipliers stack on top of fast mode pricing).",
+    "longContext replaces the base rates for a single request whose prompt (input + cache read + cache writes) is over thresholdTokens. OpenAI: 2x input and cached input, 1.5x output over 272K.",
+    "Re-checked 2026-10-15: gpt-5.1-codex-mini and gpt-5-codex are still absent from the official page; their rates come from the LiteLLM snapshot and stay verified:false. Fast-tier multipliers: 2x on gpt-5.6/6.x/5.4/5.4-mini/5.3-codex/5.2/5.1/5/5-mini; 2.5x gpt-5.5; 1.75x o3; ~1.8x o4-mini; none listed for *-nano."
+  ],
+  "models": {
+    "claude-opus-5-5": {
+      "prices": [
+        {
+          "effectiveFrom": "2026-01-01",
+          "input": 4,
+          "cacheWrite5m": 5,
+          "cacheWrite1h": 8,
+          "cacheRead": 0.2,
+          "output": 20,
+          "fastMultiplier": 2
+        }
+      ]
+    },
+    "claude-sonnet-5-5": {
+      "prices": [
+        {
+          "effectiveFrom": "2026-01-01",
+          "input": 2,
+          "cacheWrite5m": 2.5,
+          "cacheWrite1h": 4,
+          "cacheRead": 0.1,
+          "output": 10
+        }
+      ]
+    },
+    "claude-haiku-5-5": {
+      "prices": [
+        {
+          "effectiveFrom": "2026-01-01",
+          "input": 0.1,
+          "cacheWrite5m": 0.125,
+          "cacheWrite1h": 0.2,
+          "cacheRead": 0.01,
+          "output": 0.5,
+          "longContext": {
+            "thresholdTokens": 100000,
+            "input": 0.5,
+            "cacheWrite5m": 0.625,
+            "cacheWrite1h": 1,
+            "cacheRead": 0.05,
+            "output": 2.5
+          }
+        }
+      ]
+    },
+    "gpt-5.5": {
+      "prices": [
+        {
+          "effectiveFrom": "2026-01-01",
+          "input": 5,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "cacheRead": 0.5,
+          "output": 30,
+          "fastMultiplier": 2.5,
+          "longContext": {
+            "thresholdTokens": 272000,
+            "input": 10,
+            "cacheWrite5m": 0,
+            "cacheWrite1h": 0,
+            "cacheRead": 1,
+            "output": 45
+          }
+        }
+      ]
+    },
+    "gpt-5.4": {
+      "prices": [
+        {
+          "effectiveFrom": "2026-01-01",
+          "input": 2.5,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "cacheRead": 0.25,
+          "output": 15,
+          "fastMultiplier": 2,
+          "longContext": {
+            "thresholdTokens": 272000,
+            "input": 5,
+            "cacheWrite5m": 0,
+            "cacheWrite1h": 0,
+            "cacheRead": 0.5,
+            "output": 22.5
+          }
+        }
+      ]
+    },
+    "gpt-5.4-mini": {
+      "prices": [
+        {
+          "effectiveFrom": "2026-01-01",
+          "input": 0.75,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "cacheRead": 0.075,
+          "output": 4.5,
+          "fastMultiplier": 2
+        }
+      ]
+    },
+    "gpt-5.3-codex": {
+      "prices": [
+        {
+          "effectiveFrom": "2026-01-01",
+          "input": 1.75,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "cacheRead": 0.175,
+          "output": 14,
+          "fastMultiplier": 2
+        }
+      ]
+    },
+    "gpt-5.1": {
+      "prices": [
+        {
+          "effectiveFrom": "2026-01-01",
+          "input": 1.25,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "cacheRead": 0.125,
+          "output": 10,
+          "fastMultiplier": 2
+        }
+      ]
+    },
+    "gpt-5.1-codex-mini": {
+      "verified": false,
+      "prices": [
+        {
+          "effectiveFrom": "2026-01-01",
+          "input": 0.25,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "cacheRead": 0.025,
+          "output": 2
+        }
+      ]
+    },
+    "gpt-5-codex": {
+      "verified": false,
+      "prices": [
+        {
+          "effectiveFrom": "2026-01-01",
+          "input": 1.25,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "cacheRead": 0.125,
+          "output": 10
+        }
+      ]
+    },
+    "gpt-5": {
+      "prices": [
+        {
+          "effectiveFrom": "2026-01-01",
+          "input": 1.25,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "cacheRead": 0.125,
+          "output": 10,
+          "fastMultiplier": 2
+        }
+      ]
+    },
+    "o3": {
+      "prices": [
+        {
+          "effectiveFrom": "2026-01-01",
+          "input": 2,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "cacheRead": 0.5,
+          "output": 8,
+          "fastMultiplier": 1.75
+        }
+      ]
+    },
+    "o4-mini": {
+      "prices": [
+        {
+          "effectiveFrom": "2026-01-01",
+          "input": 1.1,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "cacheRead": 0.275,
+          "output": 4.4,
+          "fastMultiplier": 1.8
+        }
+      ]
+    },
+    "gpt-6.1-sol": {
+      "prices": [
+        {
+          "effectiveFrom": "2026-01-01",
+          "input": 2,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "cacheRead": 0.1,
+          "output": 10,
+          "fastMultiplier": 2,
+          "longContext": {
+            "thresholdTokens": 272000,
+            "input": 4,
+            "cacheWrite5m": 0,
+            "cacheWrite1h": 0,
+            "cacheRead": 0.2,
+            "output": 15
+          }
+        }
+      ]
+    },
+    "gpt-6-sol": {
+      "prices": [
+        {
+          "effectiveFrom": "2026-01-01",
+          "input": 2,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "cacheRead": 0.2,
+          "output": 10,
+          "fastMultiplier": 2,
+          "longContext": {
+            "thresholdTokens": 272000,
+            "input": 4,
+            "cacheWrite5m": 0,
+            "cacheWrite1h": 0,
+            "cacheRead": 0.4,
+            "output": 15
+          }
+        }
+      ]
+    },
+    "gpt-6-astra": {
+      "prices": [
+        {
+          "effectiveFrom": "2026-01-01",
+          "input": 10,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "cacheRead": 1,
+          "output": 50,
+          "fastMultiplier": 2,
+          "longContext": {
+            "thresholdTokens": 272000,
+            "input": 20,
+            "cacheWrite5m": 0,
+            "cacheWrite1h": 0,
+            "cacheRead": 2,
+            "output": 75
+          }
+        }
+      ]
+    },
+    "gpt-6-luna": {
+      "prices": [
+        {
+          "effectiveFrom": "2026-01-01",
+          "input": 0.1,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "cacheRead": 0.01,
+          "output": 0.5,
+          "fastMultiplier": 2,
+          "longContext": {
+            "thresholdTokens": 272000,
+            "input": 0.2,
+            "cacheWrite5m": 0,
+            "cacheWrite1h": 0,
+            "cacheRead": 0.02,
+            "output": 0.75
+          }
+        }
+      ]
+    },
+    "gpt-5.6-sol": {
+      "prices": [
+        {
+          "effectiveFrom": "2026-01-01",
+          "input": 4,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "cacheRead": 0.4,
+          "output": 20,
+          "fastMultiplier": 2,
+          "longContext": {
+            "thresholdTokens": 272000,
+            "input": 8,
+            "cacheWrite5m": 0,
+            "cacheWrite1h": 0,
+            "cacheRead": 0.8,
+            "output": 30
+          }
+        }
+      ]
+    },
+    "gpt-5.6-terra": {
+      "prices": [
+        {
+          "effectiveFrom": "2026-01-01",
+          "input": 2,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "cacheRead": 0.2,
+          "output": 12,
+          "fastMultiplier": 2,
+          "longContext": {
+            "thresholdTokens": 272000,
+            "input": 4,
+            "cacheWrite5m": 0,
+            "cacheWrite1h": 0,
+            "cacheRead": 0.4,
+            "output": 18
+          }
+        }
+      ]
+    },
+    "gpt-5.6-luna": {
+      "prices": [
+        {
+          "effectiveFrom": "2026-01-01",
+          "input": 0.2,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "cacheRead": 0.02,
+          "output": 1.2,
+          "fastMultiplier": 2,
+          "longContext": {
+            "thresholdTokens": 272000,
+            "input": 0.4,
+            "cacheWrite5m": 0,
+            "cacheWrite1h": 0,
+            "cacheRead": 0.04,
+            "output": 1.8
+          }
+        }
+      ]
+    },
+    "gpt-5.4-nano": {
+      "prices": [
+        {
+          "effectiveFrom": "2026-01-01",
+          "input": 0.2,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "cacheRead": 0.02,
+          "output": 1.25
+        }
+      ]
+    },
+    "gpt-5.2": {
+      "prices": [
+        {
+          "effectiveFrom": "2026-01-01",
+          "input": 1.75,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "cacheRead": 0.175,
+          "output": 14,
+          "fastMultiplier": 2
+        }
+      ]
+    },
+    "gpt-5-mini": {
+      "prices": [
+        {
+          "effectiveFrom": "2026-01-01",
+          "input": 0.25,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "cacheRead": 0.025,
+          "output": 2,
+          "fastMultiplier": 2
+        }
+      ]
+    },
+    "gpt-5-nano": {
+      "prices": [
+        {
+          "effectiveFrom": "2026-01-01",
+          "input": 0.05,
+          "cacheWrite5m": 0,
+          "cacheWrite1h": 0,
+          "cacheRead": 0.005,
+          "output": 0.4
+        }
+      ]
+    }
+  }
+}

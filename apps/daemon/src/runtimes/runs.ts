@@ -618,6 +618,7 @@ function durableRunState(run) {
       ? { designSystemSelectionSource: run.designSystemSelectionSource }
       : {}),
     ...(typeof run.clientType === 'string' ? { clientType: run.clientType } : {}),
+    ...(typeof run.usageUser === 'string' ? { usageUser: run.usageUser } : {}),
     ...(run.workspaceScope !== undefined ? { workspaceScope: run.workspaceScope } : {}),
     ...(run.analyticsTelemetry ? { analyticsTelemetry: run.analyticsTelemetry } : {}),
     ...(run.promptTelemetry ? { promptTelemetry: run.promptTelemetry } : {}),

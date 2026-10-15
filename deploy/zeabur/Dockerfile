@@ -180,6 +180,12 @@ RUN mkdir -p /app/.od && \
 ENV NODE_ENV=production
 ENV NODE_OPTIONS=--max-old-space-size=2048
 ENV OD_BIND_HOST=0.0.0.0
+# Zeabur pods run under AppArmor (cri-containerd.apparmor.d), which denies
+# mount, so Codex's bubblewrap sandbox fails ("bwrap: Failed to make / slave")
+# and every command and file write is refused. The container is the isolation
+# boundary (agents run as the non-root open-design user, same as Claude Code).
+# See deploy/README.md.
+ENV OD_CODEX_SANDBOX=danger-full-access
 ENV OD_PORT=7456
 ENV USE_BUILTIN_RIPGREP=0
 ENV DISABLE_AUTOUPDATER=1

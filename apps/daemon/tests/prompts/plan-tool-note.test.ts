@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 
 import { isTodoWriteToolName } from '@open-design/contracts';
 
-import { composeSystemPrompt } from '../../src/prompts/system.js';
+import { composeSystemPrompt, planToolNoteForRuntime } from '../../src/prompts/system.js';
 
 /**
  * The plan step must name the plan tool the RUNNING runtime actually has.
@@ -190,5 +190,54 @@ describe('todo-write atom body — no prose escape hatch', () => {
     // The atom's whole reason to exist. Removing the escape hatch must not
     // remove the instruction it was attached to.
     expect(atomBody).toContain('Before writing any artifact files');
+  });
+});
+
+/**
+ * Claude Code 2.1.292 disables TodoWrite ("TodoWrite is disabled for this
+ * session") and ships TaskCreate/TaskUpdate as DEFERRED tools that only exist
+ * after `ToolSearch` loads them. A note that offers TodoWrite as an option sent
+ * production runs straight into the disabled tool.
+ */
+describe('Claude Code plan-tool note — Task tools via ToolSearch', () => {
+  it('tells the claude agent to load the Task tools and that TodoWrite is unavailable', () => {
+    const note = planToolNoteForRuntime('claude', 'claude-stream-json') ?? '';
+    expect(note).toContain('`TaskCreate`');
+    expect(note).toContain('`TaskUpdate`');
+    expect(note).toContain('`ToolSearch`');
+    expect(note).toContain('select:TaskCreate,TaskUpdate');
+    expect(note).toContain('`TodoWrite` is not available');
+  });
+
+  it('keeps the either-or wording for other Claude-stream agents that may still ship TodoWrite', () => {
+    for (const agentId of ['codebuddy', 'amp']) {
+      const note = planToolNoteForRuntime(agentId, 'claude-stream-json') ?? '';
+      expect(note).toContain('Your plan tool is `TodoWrite`, or `TaskCreate`');
+      expect(note).not.toContain('is not available');
+    }
+  });
+
+  it('reaches the classic (non-slim) full prompt, whose discovery layer names the plan step', () => {
+    const prompt = composeSystemPrompt({
+      metadata: { kind: 'prototype' as const },
+      executionProfile: 'filesystem' as const,
+      promptCoreVariant: 'classic' as const,
+      agentId: 'claude',
+      streamFormat: 'claude-stream-json',
+    });
+    expect(prompt).toContain('select:TaskCreate,TaskUpdate');
+    // The discovery layer must defer to the note rather than demand TodoWrite.
+    expect(prompt).not.toContain('first tool call** is TodoWrite');
+  });
+
+  it('is not added to the classic prompt of a plain/API run', () => {
+    const prompt = composeSystemPrompt({
+      metadata: { kind: 'prototype' as const },
+      executionProfile: 'filesystem' as const,
+      promptCoreVariant: 'classic' as const,
+      agentId: 'deepseek',
+      streamFormat: 'plain',
+    });
+    expect(prompt).not.toContain('Your plan tool is');
   });
 });

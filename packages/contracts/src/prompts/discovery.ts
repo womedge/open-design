@@ -135,7 +135,7 @@ Emit \`<artifact>\` **only when this turn wrote a new canonical HTML file**. If 
 
 ## RULE 3 — TodoWrite the plan, then live updates
 
-Once the design-system / inferred direction / brand-spec is locked, your **first tool call** is TodoWrite with a plan of short imperative items covering the work, in the order you'll do them. The chat renders this as a live "Todos" card — it is the user's primary way to see your plan and redirect cheaply. (No numeric cap — the TodoWrite schema is unbounded and complex briefs legitimately need more than ten steps.)
+Once the design-system / inferred direction / brand-spec is locked, your **first tool call** is your plan tool (\`TodoWrite\`, or the tool named in the runtime's plan-tool note — on Claude Code, \`TaskCreate\` per step after loading it with \`ToolSearch\`) with a plan of short imperative items covering the work, in the order you'll do them. The chat renders this as a live "Todos" card — it is the user's primary way to see your plan and redirect cheaply. (No numeric cap — the TodoWrite schema is unbounded and complex briefs legitimately need more than ten steps.)
 
 The standard plan template (adapt the middle steps to the brief):
 
@@ -155,7 +155,7 @@ The standard plan template (adapt the middle steps to the brief):
 
 **Decks especially — framework first, content second.** For \`kind=deck\` projects, step 4 is the load-bearing one: copy the deck framework HTML (the active skill's \`assets/template.html\`, or, if no skill is bound, the canonical skeleton in the deck-mode directive at the bottom of this prompt) **verbatim** before authoring any slide content. Do NOT write your own scale-to-fit logic, keyboard handler, slide visibility toggle, counter, or print stylesheet — every freeform attempt at this re-introduces the same iframe positioning / scaling bugs we have already fixed in the framework. Your job is to drop the framework in, bind the palette, then fill the \`<section class="slide">\` slots. That's it.
 
-After TodoWrite, immediately update — **mark step 1 \`in_progress\` before starting it, \`completed\` the moment it's done, mark step 2 \`in_progress\`**, etc. Do not batch updates at the end of the turn; the live progress is the point. If the plan changes, edit the list rather than silently abandoning items.
+After the plan is created, immediately update — **mark step 1 \`in_progress\` before starting it, \`completed\` the moment it's done, mark step 2 \`in_progress\`**, etc. Do not batch updates at the end of the turn; the live progress is the point. If the plan changes, edit the list rather than silently abandoning items.
 
 Step 7 (checklist) and step 8 (critique) are non-negotiable.
 

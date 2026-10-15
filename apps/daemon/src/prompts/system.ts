@@ -1054,7 +1054,10 @@ export function composeSystemPrompt({
   // tool, else a numbered list") because it is prepended to every slim run and
   // some runtimes genuinely have no such tool. The concrete tool NAME is added
   // here instead, per runtime, so only the runs that can act on it pay for it.
-  if (isSlimCharterHead) {
+  // Classic (non-slim) full prompts name TodoWrite throughout the discovery
+  // layer below, so they need the note too or a Claude Code run calls a tool
+  // that is disabled. It lands before that layer; the layer defers to it.
+  if (isSlimCharterHead || (!isSlimCore && !isAskModeEarly)) {
     const planToolNote = planToolNoteForRuntime(agentId, streamFormat);
     if (planToolNote) parts.push(planToolNote, '\n\n---\n\n');
   }
@@ -1562,13 +1565,21 @@ export function composeSystemPrompt({
  * Which plan tool a Claude-family session actually has depends on its build.
  * Claude Code >= 2.1.x retired `TodoWrite` and moved the capability to
  * `TaskCreate` / `TaskUpdate` (verified on 2.1.247: the init frame's `tools`
- * array carries no `TodoWrite` on any model). The daemon reduces both dialects
- * into one canonical `TodoWrite` snapshot before the client ever sees them
- * (`emitCanonicalTaskSnapshot` in ../runtimes/claude-stream.ts), so the note
- * names both and lets the session use whichever it was given. Naming only the
- * retired one pointed newer builds at a tool that does not exist.
+ * array carries no `TodoWrite` on any model). On 2.1.292 a direct `TodoWrite`
+ * call fails with "TodoWrite is disabled for this session", and the Task tools
+ * are DEFERRED: they are only callable after `ToolSearch` loads their schemas.
+ * The daemon reduces both dialects into one canonical `TodoWrite` snapshot
+ * before the client ever sees them (`emitCanonicalTaskSnapshot` in
+ * ../runtimes/claude-stream.ts), so the host card is the same either way.
+ *
+ * Two notes, because the Claude stream format is shared. Only the `claude`
+ * agent gets `CLAUDE_CODE_ENABLE_TODO_TOOLS` (runtimes/env.ts), so only it is
+ * told TodoWrite is gone; codebuddy / amp keep the either-or wording since
+ * their builds may still ship TodoWrite.
  */
-const CLAUDE_PLAN_TOOL_NOTE = `Your plan tool is \`TodoWrite\`, or \`TaskCreate\` plus \`TaskUpdate\` on builds that ship those instead — use whichever your session actually exposes for the plan step above; the host renders either as the same live Todos card. Mark each item \`in_progress\` when started and \`completed\` as it lands.`;
+const CLAUDE_CODE_PLAN_TOOL_NOTE = `Your plan tool is \`TaskCreate\` (one call per step) plus \`TaskUpdate\`; \`TodoWrite\` is not available in this session. These tools are deferred, so load them first with \`ToolSearch\` using \`select:TaskCreate,TaskUpdate\`, then plan with TaskCreate before other work. The host renders them as the live Todos card. Mark each step \`in_progress\` with TaskUpdate when started and \`completed\` as it lands. Wherever this prompt says TodoWrite, read it as this plan tool. (If your tool list really does include \`TodoWrite\`, use that instead.)`;
+
+const CLAUDE_FAMILY_PLAN_TOOL_NOTE = `Your plan tool is \`TodoWrite\`, or \`TaskCreate\` plus \`TaskUpdate\` on builds that ship those instead — use whichever your session actually exposes for the plan step above (if a tool is deferred, load it first with \`ToolSearch\`); the host renders either as the same live Todos card. Mark each item \`in_progress\` when started and \`completed\` as it lands.`;
 
 /**
  * Codex's plan tool is `update_plan`. Both codex transports translate its
@@ -1619,8 +1630,11 @@ export function planToolNoteForRuntime(
   agentId: string | null | undefined,
   streamFormat: string | undefined,
 ): string | null {
-  // claude / codebuddy / amp — the whole Claude-stream family.
-  if (streamFormat === 'claude-stream-json') return CLAUDE_PLAN_TOOL_NOTE;
+  // claude / codebuddy / amp — the whole Claude-stream family; `claude` itself
+  // (Claude Code and its forks) is the one with TodoWrite disabled.
+  if (streamFormat === 'claude-stream-json') {
+    return agentId === 'claude' ? CLAUDE_CODE_PLAN_TOOL_NOTE : CLAUDE_FAMILY_PLAN_TOOL_NOTE;
+  }
   if (agentId === 'codex') return CODEX_PLAN_TOOL_NOTE;
   if (agentId === 'opencode' || agentId === 'byok-opencode') {
     return OPENCODE_PLAN_TOOL_NOTE;

@@ -635,3 +635,12 @@ describe('runtime plan tool in the stable request context', () => {
       .not.toContain('runtime-plan-tool');
   });
 });
+
+describe('Claude Code plan-tool note through the OD Next fork', () => {
+  it('carries the host-resolved Task/ToolSearch sentence verbatim', () => {
+    const note = 'Your plan tool is `TaskCreate` (one call per step) plus `TaskUpdate`; `TodoWrite` is not available in this session. Load them first with `ToolSearch` using `select:TaskCreate,TaskUpdate`.';
+    const stable = composeOdNextStrategyStableRequestContextV2({ agentId: 'claude', planToolNote: note });
+    expect(stable).toContain('select:TaskCreate,TaskUpdate');
+    expect(stable).toContain('`TodoWrite` is not available');
+  });
+});

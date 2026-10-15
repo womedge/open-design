@@ -1,8 +1,9 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { backfillUsageFromRuns, largestRemainder } from '../../src/usage/backfill.js';
-import { queryUsageRows } from '../../src/usage/store.js';
+import { backfillUsageFromRuns, largestRemainder, refreshProjectNames } from '../../src/usage/backfill.js';
+import { insertProject } from '../../src/db.js';
+import { queryUsageRows, upsertUsageRecord } from '../../src/usage/store.js';
 import { openTempDb, type TempDb } from './helpers.js';
 
 let h: TempDb;
@@ -126,6 +127,28 @@ describe('backfill from events.jsonl', () => {
   it('largestRemainder allocates exactly', () => {
     expect(largestRemainder([0.5, 0.5, 0.5, 0.5], 2).reduce((a, b) => a + b, 0)).toBe(2);
     expect(largestRemainder([2.4, 3.3, 4.3], 10)).toEqual([3, 3, 4]);
+  });
+
+  it('fills project names: live from the projects table, deleted from the latest conversation_title event; idempotent', async () => {
+    insertProject(h.db, { id: 'live1', name: 'Live One', createdAt: 1, updatedAt: 1 });
+    const tokens = { input: 5, cacheWrite5m: 0, cacheWrite1h: 0, cacheRead: 0, output: 5 };
+    const rec = (runId: string, projectId: string) =>
+      upsertUsageRecord(h.db, { runId, projectId, user: 'automatic', agentId: 'claude', model: 'claude-sonnet-5-5', messageId: 'm', ts: Date.parse('2026-10-14T10:00:00Z'), tokens });
+    rec('rl', 'live1'); rec('rd1', 'gone-titled'); rec('rd2', 'gone-untitled');
+    h.db.prepare(`UPDATE usage_records SET project_name = NULL`).run(); // as if recorded before names were snapshotted
+    writeRun('rd1', { projectId: 'gone-titled' }, [
+      { type: 'conversation_title', title: 'Old Title' },
+      { type: 'conversation_title', title: 'Tranquil AI 設計系統' },
+    ]);
+    writeRun('rd2', { projectId: 'gone-untitled' }, [result(1, 0, 0, 0, 1)]);
+
+    const first = await refreshProjectNames(h.db, runsDir());
+    expect(first).toEqual({ filled: 2, unrecoverable: 1 });
+    const names = Object.fromEntries(rows().map((r) => [r.projectId, r.projectName]));
+    expect(names).toEqual({ live1: 'Live One', 'gone-titled': 'Tranquil AI 設計系統', 'gone-untitled': null });
+    expect(await refreshProjectNames(h.db, runsDir())).toEqual({ filled: 0, unrecoverable: 1 });
+    const bf = await backfillUsageFromRuns(h.db, runsDir());
+    expect(bf.deletedProjectsUnnamed).toBe(1);
   });
 
   it('missing runs directory is fine', async () => {

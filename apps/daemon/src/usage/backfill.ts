@@ -40,6 +40,10 @@ export interface BackfillResult {
   runsSkippedOtherAgent: number;
   runsWithoutUsage: number;
   recordsWritten: number;
+  /** Records that got a project name snapshot (live name, or recovered for a deleted project). */
+  projectNamesFilled: number;
+  /** Deleted projects whose name could not be recovered (left null). */
+  deletedProjectsUnnamed: number;
 }
 
 /**
@@ -112,12 +116,14 @@ export async function backfillUsageFromRuns(db: SqliteDb, runsDir: string): Prom
     runsSkippedOtherAgent: 0,
     runsWithoutUsage: 0,
     recordsWritten: 0,
+    projectNamesFilled: 0,
+    deletedProjectsUnnamed: 0,
   };
   let entries: fs.Dirent[] = [];
   try {
     entries = await fsp.readdir(runsDir, { withFileTypes: true });
   } catch {
-    return result;
+    entries = [];
   }
   const hasRecords = db.prepare(`SELECT 1 FROM usage_records WHERE run_id = ? LIMIT 1`);
   for (const entry of entries) {
@@ -257,5 +263,76 @@ export async function backfillUsageFromRuns(db: SqliteDb, runsDir: string): Prom
       result.runsWithoutUsage += 1;
     }
   }
+  const names = await refreshProjectNames(db, runsDir);
+  result.projectNamesFilled = names.filled;
+  result.deletedProjectsUnnamed = names.unrecoverable;
   return result;
 }
+
+/**
+ * Fill `usage_records.project_name` where it is still empty (idempotent).
+ *
+ *  1. Live projects: copy the current name from the projects table.
+ *  2. Deleted projects: deleting a project cascades away its conversations,
+ *     messages, comments and files, so the name survives in only one place —
+ *     the `conversation_title` event the agent emitted into a run's
+ *     `runs/<runId>/events.jsonl` (verified on production data: run
+ *     state.json files and every table hold no project name after deletion).
+ *     The latest such title across the project's runs is used. That is the
+ *     conversation title, which equals the project name for design-system
+ *     projects and the usual auto-named ones, but a project whose runs never
+ *     emitted a title stays unnamed (null) rather than guessing from a prompt.
+ */
+export async function refreshProjectNames(
+  db: SqliteDb,
+  runsDir: string,
+): Promise<{ filled: number; unrecoverable: number }> {
+  let filled = db
+    .prepare(
+      `UPDATE usage_records
+          SET project_name = (SELECT name FROM projects WHERE projects.id = usage_records.project_id)
+        WHERE project_name IS NULL AND project_id IN (SELECT id FROM projects)`,
+    )
+    .run().changes;
+  const missing = db
+    .prepare(
+      `SELECT DISTINCT project_id AS id FROM usage_records
+        WHERE project_name IS NULL AND project_id IS NOT NULL AND project_id != ''
+          AND project_id NOT IN (SELECT id FROM projects)`,
+    )
+    .all() as Array<{ id: string }>;
+  const runsOf = db.prepare(`SELECT run_id FROM usage_records WHERE project_id = ? GROUP BY run_id ORDER BY MAX(ts) DESC`);
+  const setName = db.prepare(`UPDATE usage_records SET project_name = ? WHERE project_id = ? AND project_name IS NULL`);
+  let unrecoverable = 0;
+  for (const { id } of missing) {
+    await yieldToEventLoop();
+    let title: string | null = null;
+    for (const { run_id } of runsOf.all(id) as Array<{ run_id: string }>) {
+      title = await lastConversationTitle(path.join(runsDir, run_id, 'events.jsonl'));
+      if (title) break;
+    }
+    if (title) filled += setName.run(title, id).changes;
+    else unrecoverable += 1;
+  }
+  return { filled, unrecoverable };
+}
+
+async function lastConversationTitle(file: string): Promise<string | null> {
+  let raw: string;
+  try {
+    raw = await fsp.readFile(file, 'utf8');
+  } catch {
+    return null;
+  }
+  if (!raw.includes('conversation_title')) return null;
+  let title: string | null = null;
+  for (const line of raw.split('\n')) {
+    if (!line.includes('conversation_title')) continue;
+    try {
+      const data = rec(JSON.parse(line))?.data;
+      if (data?.type === 'conversation_title' && typeof data.title === 'string' && data.title.trim()) title = data.title.trim();
+    } catch { /* skip */ }
+  }
+  return title;
+}
+

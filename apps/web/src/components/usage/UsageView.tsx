@@ -29,8 +29,9 @@ import {
   modelDisplayName,
   type Delta,
 } from './usage-format';
-import { USAGE_NO_PROJECT_ID, buildModelColors, projectLabel } from './usage-model';
-import { buildProjectLabels } from './usage-project-labels';
+import { USAGE_NO_PROJECT_ID, buildModelColors } from './usage-model';
+import { ProjectName } from './ProjectName';
+import { buildProjectLabels, plainProjectLabel, type UsageProjectLabel } from './usage-project-labels';
 import { listProjects } from '../../state/projects';
 import styles from './UsageView.module.css';
 
@@ -45,7 +46,7 @@ const NO_FILTERS: Filters = { projectId: '', user: '', agentId: '', model: '' };
 const BASE_AGENTS = ['claude', 'codex', 'opencode'];
 
 interface Options {
-  projects: Map<string, string | null>;
+  projects: Map<string, { name: string | null; deleted: boolean }>;
   users: Set<string>;
   agents: Set<string>;
   models: Set<string>;
@@ -63,7 +64,15 @@ function mergeOptions(prev: Options, summary: UsageSummaryResponse): Options {
     agents: new Set(prev.agents),
     models: new Set(prev.models),
   };
-  for (const p of summary.projects) next.projects.set(p.projectId, p.projectName);
+  for (const p of summary.projects) {
+    next.projects.set(p.projectId, { name: p.projectName, deleted: p.deleted === true });
+  }
+  // Deleted projects that only appear in a person's drill-down still need a name.
+  for (const person of summary.people) {
+    for (const x of person.projects) {
+      if (!next.projects.has(x.key)) next.projects.set(x.key, { name: x.name ?? null, deleted: x.deleted === true });
+    }
+  }
   for (const p of summary.people) next.users.add(p.user);
   for (const m of summary.models) {
     next.models.add(m.model);
@@ -175,9 +184,11 @@ export function UsageView() {
 
   const projectLabels = useMemo(() => {
     const known = new Map(options.projects);
-    for (const p of summary?.projects ?? []) known.set(p.projectId, p.projectName);
+    for (const p of summary?.projects ?? []) {
+      known.set(p.projectId, { name: p.projectName, deleted: p.deleted === true });
+    }
     return buildProjectLabels(
-      [...known].map(([id, name]) => ({ id, name })),
+      [...known].map(([id, v]) => ({ id, name: v.name, deleted: v.deleted })),
       createdAt,
       t,
     );
@@ -209,7 +220,10 @@ export function UsageView() {
           options={[
             ...[...options.projects]
               .filter(([id]) => id !== USAGE_NO_PROJECT_ID)
-              .map(([id, name]) => ({ value: id, label: projectLabels.get(id) ?? projectLabel(id, name, t) })),
+              .map(([id]) => {
+                const label = projectLabels.get(id);
+                return { value: id, label: label ? plainProjectLabel(label, t) : id };
+              }),
             { value: USAGE_NO_PROJECT_ID, label: t('usage.noProject') },
           ]}
         />
@@ -433,7 +447,7 @@ function ProjectList({
   onToggle,
 }: {
   summary: UsageSummaryResponse;
-  projectLabels: ReadonlyMap<string, string>;
+  projectLabels: ReadonlyMap<string, UsageProjectLabel>;
   expanded: boolean;
   onToggle: () => void;
 }) {
@@ -443,7 +457,7 @@ function ProjectList({
   const rest = summary.projects.slice(PROJECT_ROWS_SHOWN);
   const row = (p: UsageSummaryResponse['projects'][number]) => (
     <div key={p.projectId} className={styles.projectRow} data-testid="usage-project-row">
-      <span className={styles.projectName}>{projectLabels.get(p.projectId) ?? projectLabel(p.projectId, p.projectName, t)}</span>
+      <span className={styles.projectName}>{projectLabels.get(p.projectId) ? <ProjectName label={projectLabels.get(p.projectId)!} /> : p.projectId}</span>
       <span className={styles.projectRuns}>{formatInt(p.runs)} {t('usage.runsUnit')}</span>
       <span className={styles.projectFigures}>
         <span className={styles.projectCost}>{formatUsd(p.costUsd)}</span>{' '}

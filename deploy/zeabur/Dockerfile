@@ -149,6 +149,7 @@ ENV CHROME_PATH=/usr/bin/chromium \
     PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
     NODE_PATH=/usr/local/lib/node_modules
 COPY --chmod=0755 deploy/zeabur/od-screenshot /usr/local/bin/od-screenshot
+COPY --chmod=0755 deploy/zeabur/od-codex-login /usr/local/bin/od-codex-login
 # User-level instructions: Claude Code reads ~/.claude/CLAUDE.md; OpenCode
 # reads ~/.config/opencode/AGENTS.md (it no longer falls back to CLAUDE.md);
 # Codex reads $CODEX_HOME/AGENTS.md (default ~/.codex).

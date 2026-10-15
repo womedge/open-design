@@ -915,6 +915,8 @@ export const zhTW: Dict = {
   "usage.deletedProject": "已刪除專案",
   "usage.unpriced": "未計價：{models}",
   "usage.noProject": "未指定專案",
+  "usage.deletedHint": "（已刪除）",
+  "usage.deletedOption": "{name}（已刪除）",
   "usage.showAllProjects": "顯示全部 {n} 個",
   "usage.collapse": "收起",
   "usage.export": "匯出",

@@ -910,6 +910,8 @@ export const en: Dict = {
   "usage.deletedProject": "Deleted project",
   "usage.unpriced": "Unpriced: {models}",
   "usage.noProject": "No project",
+  "usage.deletedHint": "(deleted)",
+  "usage.deletedOption": "{name} (deleted)",
   "usage.showAllProjects": "Show all {n}",
   "usage.collapse": "Collapse",
   "usage.export": "Export",

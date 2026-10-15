@@ -93,7 +93,7 @@ describe('summary', () => {
     expect(s.projects.find((p) => p.projectId === 'gone')!.projectName).toBeNull();
     const a = s.people.find((p) => p.user === 'a@x.com')!;
     expect(a.costUsd).toBe(12);
-    expect(a.projects).toEqual([{ key: 'p1', costUsd: 12, tokens: 2_000_000 }]);
+    expect(a.projects).toEqual([{ key: 'p1', name: '專案,一', deleted: false, costUsd: 12, tokens: 2_000_000 }]);
     expect(a.models[0]!.key).toBe('claude-sonnet-5-5');
     expect(a.daily).toHaveLength(31);
     expect(s.people.map((p) => p.user)).toContain('automatic');
@@ -117,6 +117,33 @@ describe('summary', () => {
     const s = buildUsageSummary(h.db, { from: '2027-01-01', to: '2027-01-02' });
     expect(s.totals).toEqual({ costUsd: 0, tokens: 0, runs: 0 });
     expect(s.daily).toHaveLength(2);
+  });
+});
+
+describe('project names survive deletion', () => {
+  it('snapshots the name at write time; deleted projects keep it and are flagged', () => {
+    add({ messageId: 'd1', runId: 'rd', projectId: 'p1', ts: '2026-10-14T02:00:00Z' });
+    h.db.prepare(`DELETE FROM projects WHERE id = 'p1'`).run();
+    const s = buildUsageSummary(h.db, { from: '2026-10-14', to: '2026-10-14' });
+    expect(s.projects[0]).toMatchObject({ projectId: 'p1', projectName: '專案,一', deleted: true });
+    expect(s.people[0]!.projects[0]).toMatchObject({ key: 'p1', name: '專案,一', deleted: true });
+    const csv = buildUsageCsv(queryUsageRows(h.db, { from: '2026-10-14', to: '2026-10-14' }));
+    const lines = csv.slice(1).trim().split('\r\n');
+    expect(lines[0]!.endsWith(',projectDeleted')).toBe(true);
+    expect(lines[1]!).toContain('"專案,一"');
+    expect(lines[1]!.endsWith(',true')).toBe(true);
+  });
+
+  it('a live project shows its current name and deleted:false', () => {
+    add({ messageId: 'd2', runId: 'rl', ts: '2026-10-14T02:00:00Z' });
+    h.db.prepare(`UPDATE projects SET name = 'Renamed' WHERE id = 'p1'`).run();
+    const s = buildUsageSummary(h.db, { from: '2026-10-14', to: '2026-10-14' });
+    expect(s.projects[0]).toMatchObject({ projectName: 'Renamed', deleted: false });
+  });
+
+  it('the migration adds project_name to an older table exactly once', () => {
+    const cols = (h.db.prepare(`PRAGMA table_info(usage_records)`).all() as Array<{ name: string }>).map((c) => c.name);
+    expect(cols.filter((c) => c === 'project_name')).toHaveLength(1);
   });
 });
 
@@ -172,7 +199,7 @@ describe('query parsing + CSV export', () => {
     expect(csv.charCodeAt(0)).toBe(0xfeff);
     const lines = csv.slice(1).trim().split('\r\n');
     expect(lines[0]).toBe(USAGE_EXPORT_COLUMNS.join(','));
-    expect(lines[1]).toBe('2026-10-15,00:30:05,p1,"專案,一",a@x.com,claude,claude-sonnet-5-5,run-a,10,0,3,0,7,' + (((10 * 2 + 3 * 4 + 7 * 10) / 1e6).toString()));
+    expect(lines[1]).toBe('2026-10-15,00:30:05,p1,"專案,一",a@x.com,claude,claude-sonnet-5-5,run-a,10,0,3,0,7,' + (((10 * 2 + 3 * 4 + 7 * 10) / 1e6).toString()) + ',false');
     expect(lines[2]).toContain(`"'=HYPERLINK(""x"")"`);
     expect(usageExportFilename({ from: '2026-10-01', to: '2026-10-31' })).toBe('usage-2026-10-01-2026-10-31.csv');
   });

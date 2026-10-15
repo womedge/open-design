@@ -1,0 +1,5 @@
+.struck {
+  color: var(--text-muted);
+  font-weight: 500;
+  text-decoration: line-through;
+}

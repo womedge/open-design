@@ -49,13 +49,3 @@ export const USAGE_NO_PROJECT_ID = '__none__';
 
 /** The API refuses ranges longer than this many days. */
 export const USAGE_MAX_RANGE_DAYS = 1100;
-
-/** Row / option label for a project: unassigned runs and deleted projects read differently. */
-export function projectLabel(
-  id: string,
-  name: string | null,
-  t: (key: TKey) => string,
-): string {
-  if (id === USAGE_NO_PROJECT_ID) return t('usage.noProject');
-  return name ?? t('usage.deletedProject');
-}

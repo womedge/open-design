@@ -1,0 +1,49 @@
+#!/bin/sh
+# Start (or check) the Codex ChatGPT device-code login inside the container.
+#
+#   od-codex-login          start a login and print the URL + one-time code
+#   od-codex-login status   show whether Codex is signed in
+#
+# `zeabur service exec` always runs under a pty and sends SIGHUP when the exec
+# ends. The npm `codex` wrapper installs its own SIGHUP handler (defeating
+# nohup) and forwards it to the native binary, which then dies before the
+# browser approval lands. setsid detaches the login from the exec's session.
+set -eu
+
+CODEX_HOME="${CODEX_HOME:?CODEX_HOME must point at the persistent volume}"
+LOG=/tmp/codex-login.log
+as_user() {
+  if [ "$(id -u)" = "0" ]; then
+    su-exec open-design env HOME=/home/open-design CODEX_HOME="$CODEX_HOME" "$@"
+  else
+    env CODEX_HOME="$CODEX_HOME" "$@"
+  fi
+}
+strip_ansi() { sed 's/\x1b\[[0-9;]*m//g'; }
+
+if [ "${1:-}" = "status" ]; then
+  as_user codex login status 2>&1 | grep -v 'arg0 temp' || true
+  exit 0
+fi
+
+if ps -o args | grep -q '[l]ogin --device-auth'; then
+  echo "A device-code login is already waiting; finish it in the browser or restart the container." >&2
+  exit 1
+fi
+
+if [ "$(id -u)" = "0" ]; then
+  setsid su-exec open-design env HOME=/home/open-design CODEX_HOME="$CODEX_HOME" \
+    codex login --device-auth </dev/null >"$LOG" 2>&1 &
+else
+  setsid env CODEX_HOME="$CODEX_HOME" codex login --device-auth </dev/null >"$LOG" 2>&1 &
+fi
+sleep 6
+
+if ! ps -o args | grep -q '[l]ogin --device-auth'; then
+  echo "The login process exited before approval; do not enter the code. Log:" >&2
+  strip_ansi <"$LOG" >&2
+  exit 1
+fi
+strip_ansi <"$LOG" | grep -v 'arg0 temp'
+echo
+echo "Waiting for approval (up to 15 minutes). Then run: od-codex-login status"

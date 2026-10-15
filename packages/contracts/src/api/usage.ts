@@ -48,14 +48,24 @@ export interface UsageTotals {
 
 export interface UsageProjectRow {
   projectId: string;
-  /** Null when the project was deleted. */
+  /**
+   * The live project name; for a deleted project the name snapshotted on its
+   * usage records (the original name). Null only when no name was ever
+   * recoverable, or for the reserved no-project row.
+   */
   projectName: string | null;
+  /** True when the project no longer exists (the web draws its name struck through). Always sent by the daemon. */
+  deleted?: boolean;
   costUsd: number;
   runs: number;
 }
 
 export interface UsageBreakdownRow {
   key: string;
+  /** Project breakdowns only: same name rule as `UsageProjectRow.projectName`. */
+  name?: string | null;
+  /** Project breakdowns only: the project no longer exists. */
+  deleted?: boolean;
   costUsd: number;
   tokens: number;
 }
@@ -138,4 +148,6 @@ export const USAGE_EXPORT_COLUMNS = [
   'cacheRead',
   'output',
   'costUsd',
+  /** `true` when the project no longer exists, else `false`. */
+  'projectDeleted',
 ] as const;

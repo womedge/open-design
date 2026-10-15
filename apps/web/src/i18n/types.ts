@@ -1259,6 +1259,8 @@ export interface Dict {
   'usage.deletedProject': string;
   'usage.unpriced': string;
   'usage.noProject': string;
+  'usage.deletedHint': string;
+  'usage.deletedOption': string;
   'usage.showAllProjects': string;
   'usage.collapse': string;
   'usage.export': string;

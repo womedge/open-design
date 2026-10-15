@@ -5,19 +5,20 @@ import type { UsagePersonRow, UsageSummaryResponse } from '@open-design/contract
 import { useT } from '../../i18n';
 import { formatShortDay, fromIso } from './usage-dates';
 import { formatInt, formatTokens, formatUsd, modelDisplayName } from './usage-format';
-import { colorOfModel, projectLabel, userInitial } from './usage-model';
+import { colorOfModel, userInitial } from './usage-model';
+import { ProjectName } from './ProjectName';
+import type { UsageProjectLabel } from './usage-project-labels';
 import styles from './UsagePeople.module.css';
 
 interface Props {
   summary: UsageSummaryResponse;
   modelColors: Map<string, string>;
-  projectLabels: ReadonlyMap<string, string>;
+  projectLabels: ReadonlyMap<string, UsageProjectLabel>;
 }
 
 export function UsagePeople({ summary, modelColors, projectLabels }: Props) {
   const t = useT();
   const [openUser, setOpenUser] = useState<string | null>(null);
-  const projectNames = projectLabels;
 
   return (
     <section className={styles.card} aria-labelledby="usage-people-title">
@@ -60,7 +61,7 @@ export function UsagePeople({ summary, modelColors, projectLabels }: Props) {
             </button>
             <div id={panelId} className={`accordion-collapsible ${open ? 'open' : ''}`}>
               <div className="accordion-collapsible-inner">
-                {open ? <PersonDetail person={p} projectNames={projectNames} modelColors={modelColors} /> : null}
+                {open ? <PersonDetail person={p} projectNames={projectLabels} modelColors={modelColors} /> : null}
               </div>
             </div>
           </div>
@@ -76,7 +77,7 @@ function PersonDetail({
   modelColors,
 }: {
   person: UsagePersonRow;
-  projectNames: ReadonlyMap<string, string>;
+  projectNames: ReadonlyMap<string, UsageProjectLabel>;
   modelColors: Map<string, string>;
 }) {
   const t = useT();
@@ -90,7 +91,7 @@ function PersonDetail({
         <h3 className={styles.subTitle}>{t('usage.byProject')}</h3>
         {person.projects.map((x) => (
           <div key={x.key} className={styles.item}>
-            <span className={styles.itemName}>{projectNames.get(x.key) ?? x.key}</span>
+            <span className={styles.itemName}>{projectNames.get(x.key) ? <ProjectName label={projectNames.get(x.key)!} /> : x.key}</span>
             <span className={styles.itemValue}>{formatUsd(x.costUsd)}</span>
             <span className={styles.track}>
               <span className={styles.fill} style={{ width: `${projectMax ? (x.costUsd / projectMax) * 100 : 0}%` }} />

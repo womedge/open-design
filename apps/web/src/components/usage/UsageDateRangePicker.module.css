@@ -85,26 +85,36 @@
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  padding: 16px 20px 8px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--border-soft);
 }
 .backdrop .dialog .body {
   display: flex;
   flex-direction: row;
-  flex-wrap: wrap;
-  gap: 20px 28px;
-  padding: 8px 20px 16px;
+  align-items: stretch;
+  gap: 0;
+  padding: 0;
 }
+/* Left column, as in the source picker: a fixed 240px rail of vertical
+   options, split from the calendars by a hairline. */
 .options {
-  flex: 0 0 200px;
+  flex: 0 0 240px;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 16px;
   min-width: 0;
+  padding: 16px 20px;
+  border-right: 1px solid var(--border-soft);
 }
 .group {
   display: flex;
   flex-direction: column;
   gap: 8px;
+}
+.group + .group {
+  padding-top: 16px;
+  border-top: 1px solid var(--border-soft);
 }
 .groupLabel {
   font-size: 12px;
@@ -112,18 +122,25 @@
   color: var(--text-muted);
 }
 .optionList {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 4px;
 }
 .option {
+  justify-content: flex-start;
+  width: 100%;
+  min-height: 34px;
+  border-color: transparent;
   border-radius: var(--radius-large);
+  background: transparent;
   font-size: 13px;
+  text-align: left;
   transition:
     background-color 140ms var(--ease-out),
     transform 200ms var(--ease-out);
 }
 .option:not(.optionOn):hover {
+  background: var(--bg-subtle);
   transform: translateX(4px);
 }
 .optionOn,
@@ -172,11 +189,13 @@
 }
 
 .calendarSide {
-  flex: 1 1 360px;
+  flex: 1 1 0;
   min-width: 0;
+  box-sizing: border-box;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  padding: 16px 20px;
 }
 .months {
   display: flex;
@@ -265,15 +284,15 @@
 }
 
 .summaries {
+  margin-top: auto;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
 .summary {
-  display: flex;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
-  justify-content: space-between;
   gap: 6px 12px;
   padding-top: 10px;
   border-top: 1px solid var(--border-soft);
@@ -285,7 +304,10 @@
 .rangeChip {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 8px;
+  box-sizing: border-box;
+  min-width: 236px;
   min-height: 32px;
   padding: 0 10px;
   border: 1px solid var(--border);
@@ -305,6 +327,7 @@
   color: var(--text-muted);
 }
 .backdrop .dialog .footer {
+  margin-top: 0;
   display: flex;
   justify-content: flex-end;
   gap: 8px;
@@ -325,8 +348,31 @@
     max-height: none;
     border-radius: 0;
   }
+  .backdrop .dialog .body {
+    flex-direction: column;
+  }
   .options {
-    flex-basis: 100%;
+    flex: none;
+    border-right: 0;
+    border-bottom: 1px solid var(--border-soft);
+  }
+  .optionList {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .option {
+    justify-content: center;
+    border-color: var(--border-soft);
+    padding-inline: 4px;
+  }
+  .calendarSide {
+    flex: none;
+  }
+  .summary {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .rangeChip {
+    min-width: 0;
+    width: 100%;
   }
   .trigger {
     min-width: 0;

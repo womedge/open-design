@@ -17,7 +17,8 @@ const USAGE = `Usage:
 
 Dates are calendar days in Asia/Taipei, inclusive. 'export' writes the CSV that
 the web page downloads (default file name usage-<from>-<to>.csv, or '-' for stdout).
-'backfill' rebuilds usage records of past runs once; running it again is a no-op.
+'backfill' rebuilds usage records of past runs once and fills in project names (also those of
+deleted projects, where recoverable); running it again is a no-op.
 'reprice' prices records that had no price when they were written (a model added to the
 price table later), at the price effective on each record's day; running it again is a no-op.
 backfill/reprice only work from the daemon's own host.
@@ -152,7 +153,8 @@ export async function runUsageCli(args: string[]): Promise<{ exitCode: number }>
     else {
       console.log(
         `backfill: scanned ${data.runsScanned}, backfilled ${data.runsBackfilled} runs (${data.recordsWritten} records), ` +
-          `already had records ${data.runsSkippedExisting}, other agents ${data.runsSkippedOtherAgent}, no usage ${data.runsWithoutUsage}`,
+          `already had records ${data.runsSkippedExisting}, other agents ${data.runsSkippedOtherAgent}, no usage ${data.runsWithoutUsage}; ` +
+          `project names filled ${data.projectNamesFilled}, deleted projects still unnamed ${data.deletedProjectsUnnamed}`,
       );
     }
     return { exitCode: 0 };

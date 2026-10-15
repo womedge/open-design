@@ -131,14 +131,14 @@ export function buildUsageSummary(db: SqliteDb, q: UsageQuery): UsageSummaryResp
     }
   }
 
-  const projects = new Map<string, { name: string | null; cost: number; runs: Set<string> }>();
+  const projects = new Map<string, { name: string | null; deleted: boolean; cost: number; runs: Set<string> }>();
   const people = new Map<
     string,
     {
       cost: number;
       tokens: number;
       runs: Set<string>;
-      projects: Map<string, { cost: number; tokens: number }>;
+      projects: Map<string, { cost: number; tokens: number; name: string | null; deleted: boolean }>;
       models: Map<string, { cost: number; tokens: number }>;
       rows: UsageRow[];
     }
@@ -152,7 +152,8 @@ export function buildUsageSummary(db: SqliteDb, q: UsageQuery): UsageSummaryResp
   for (const r of rows) {
     const total = totalTokens(r.tokens);
     const pk = r.projectId || NO_PROJECT_KEY;
-    const p = projects.get(pk) ?? { name: r.projectName, cost: 0, runs: new Set<string>() };
+    const p = projects.get(pk) ?? { name: r.projectName, deleted: r.projectDeleted, cost: 0, runs: new Set<string>() };
+    if (!p.name && r.projectName) p.name = r.projectName;
     p.cost += r.costUsd;
     p.runs.add(r.runId);
     projects.set(pk, p);
@@ -161,14 +162,15 @@ export function buildUsageSummary(db: SqliteDb, q: UsageQuery): UsageSummaryResp
       cost: 0,
       tokens: 0,
       runs: new Set<string>(),
-      projects: new Map<string, { cost: number; tokens: number }>(),
+      projects: new Map<string, { cost: number; tokens: number; name: string | null; deleted: boolean }>(),
       models: new Map<string, { cost: number; tokens: number }>(),
       rows: [] as UsageRow[],
     };
     person.cost += r.costUsd;
     person.tokens += total;
     person.runs.add(r.runId);
-    const pp = person.projects.get(pk) ?? { cost: 0, tokens: 0 };
+    const pp = person.projects.get(pk) ?? { cost: 0, tokens: 0, name: r.projectName, deleted: r.projectDeleted };
+    if (!pp.name && r.projectName) pp.name = r.projectName;
     pp.cost += r.costUsd;
     pp.tokens += total;
     person.projects.set(pk, pp);
@@ -192,6 +194,7 @@ export function buildUsageSummary(db: SqliteDb, q: UsageQuery): UsageSummaryResp
     .map(([projectId, v]) => ({
       projectId,
       projectName: v.name,
+      deleted: v.deleted,
       costUsd: roundCost(v.cost),
       runs: v.runs.size,
     }))
@@ -203,7 +206,9 @@ export function buildUsageSummary(db: SqliteDb, q: UsageQuery): UsageSummaryResp
       costUsd: roundCost(v.cost),
       tokens: v.tokens,
       runs: v.runs.size,
-      projects: breakdown(v.projects),
+      projects: [...v.projects.entries()]
+        .map(([key, x]) => ({ key, name: x.name, deleted: x.deleted, costUsd: roundCost(x.cost), tokens: x.tokens }))
+        .sort((a, b) => b.costUsd - a.costUsd || a.key.localeCompare(b.key)),
       models: breakdown(v.models),
       daily: dailyOf(v.rows, days).map(({ date, costUsd }) => ({ date, costUsd })),
     }))
@@ -262,6 +267,7 @@ export function buildUsageCsv(rows: UsageRow[]): string {
       cacheRead: r.tokens.cacheRead,
       output: r.tokens.output,
       costUsd: roundCost(r.costUsd),
+      projectDeleted: r.projectDeleted ? 'true' : 'false',
     };
     lines.push(USAGE_EXPORT_COLUMNS.map((c) => csvCell(cells[c])).join(','));
   }

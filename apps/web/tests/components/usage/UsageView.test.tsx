@@ -15,7 +15,7 @@ function summary(over: Partial<UsageSummaryResponse> = {}): UsageSummaryResponse
     compareTotals: { costUsd: 41.35, tokens: 98_000_000, runs: 54 },
     projects: [
       { projectId: 'p1', projectName: 'Brand site', costUsd: 30, runs: 40 },
-      { projectId: 'p2', projectName: null, costUsd: 20.86, runs: 25 },
+      { projectId: 'p2', projectName: null, deleted: true, costUsd: 20.86, runs: 25 },
     ],
     people: [
       {
@@ -272,7 +272,7 @@ describe('UsageView', () => {
         projects: [
           { projectId: 'p1', projectName: 'Website Clone', costUsd: 30, runs: 40 },
           { projectId: 'p2', projectName: 'Website Clone', costUsd: 20, runs: 25 },
-          { projectId: 'p3', projectName: null, costUsd: 0.86, runs: 1 },
+          { projectId: 'p3', projectName: null, deleted: true, costUsd: 0.86, runs: 1 },
         ],
         people: base.people,
       }));
@@ -313,5 +313,46 @@ describe('UsageView', () => {
     renderView();
     await screen.findByTestId('usage-kpi-cost');
     expect(screen.queryByTestId('usage-projects-toggle')).toBeNull();
+  });
+
+  it('draws deleted projects struck through in rows, filter options and drill-down', async () => {
+    const base = summary();
+    mockFetch((url) => {
+      if (!url.startsWith('/api/usage')) return json({ projects: [] });
+      return json(summary({
+        projects: [
+          { projectId: 'p1', projectName: 'Live Site', deleted: false, costUsd: 30, runs: 40 },
+          { projectId: 'p2', projectName: 'Old Site', deleted: true, costUsd: 20, runs: 25 },
+        ],
+        people: [{
+          ...base.people[0]!,
+          projects: [
+            { key: 'p1', name: 'Live Site', deleted: false, costUsd: 30, tokens: 1 },
+            { key: 'p2', name: 'Old Site', deleted: true, costUsd: 10, tokens: 1 },
+          ],
+        }],
+      }));
+    });
+    renderView();
+    const rows = await screen.findAllByTestId('usage-project-row');
+
+    // 各專案用量: name kept, struck, with a hidden spoken hint; live row untouched.
+    const struck = within(rows[1]!).getByTestId('usage-project-struck');
+    expect(struck.textContent).toBe('Old Site');
+    expect(getComputedStyle(struck).textDecorationLine === 'line-through' || struck.className.includes('struck')).toBe(true);
+    expect(rows[1]!.textContent).toContain('（已刪除）');
+    expect(within(rows[0]!).queryByTestId('usage-project-struck')).toBeNull();
+    expect(rows[0]!.textContent).not.toContain('已刪除');
+
+    // 專案 filter: plain text only.
+    const select = screen.getByTestId('usage-filter-project') as HTMLSelectElement;
+    const labels = [...select.options].map((o) => o.textContent);
+    expect(labels).toContain('Old Site（已刪除）');
+    expect(labels).toContain('Live Site');
+
+    // Drill-down.
+    const person = screen.getAllByTestId('usage-person')[0]!;
+    fireEvent.click(within(person).getByRole('button'));
+    expect(within(person).getByTestId('usage-project-struck').textContent).toBe('Old Site');
   });
 });

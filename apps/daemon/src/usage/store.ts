@@ -50,6 +50,12 @@ export function migrateUsageTables(db: SqliteDb): void {
       updated_at INTEGER NOT NULL
     );
   `);
+  // Project name at write time, so the original name survives project deletion.
+  // Idempotent column add (SQLite has no ADD COLUMN IF NOT EXISTS).
+  const cols = db.prepare(`PRAGMA table_info(usage_records)`).all() as Array<{ name: string }>;
+  if (!cols.some((c) => c.name === 'project_name')) {
+    db.exec(`ALTER TABLE usage_records ADD COLUMN project_name TEXT`);
+  }
 }
 
 export interface UsageRecordInput {
@@ -66,6 +72,8 @@ export interface UsageRecordInput {
   source?: 'live' | 'backfill';
   /** Cost the agent itself reported (OpenCode); used only when our table has no price for the model. */
   reportedCostUsd?: number | null;
+  /** Defaults to the project's current name from the projects table. */
+  projectName?: string | null;
 }
 
 function costOf(model: string, day: string, input: UsageRecordInput) {
@@ -96,6 +104,17 @@ export const EMPTY_TOKENS: UsageTokens = {
  * larger one (ccusage's rule: duplicated frames of one message resolve to the
  * max token total). Returns whether a row was written.
  */
+function snapshotProjectName(db: SqliteDb, input: UsageRecordInput): string | null {
+  if (typeof input.projectName === 'string' && input.projectName) return input.projectName;
+  if (!input.projectId) return null;
+  try {
+    const r = db.prepare(`SELECT name FROM projects WHERE id = ?`).get(input.projectId) as { name?: string } | undefined;
+    return r?.name || null;
+  } catch {
+    return null;
+  }
+}
+
 export function upsertUsageRecord(db: SqliteDb, input: UsageRecordInput): boolean {
   const total = totalTokens(input.tokens);
   if (total <= 0) return false;
@@ -103,7 +122,11 @@ export function upsertUsageRecord(db: SqliteDb, input: UsageRecordInput): boolea
   const existing = db
     .prepare(`SELECT id, total_tokens, day FROM usage_records WHERE run_id = ? AND message_id = ?`)
     .get(input.runId, input.messageId) as { id: number; total_tokens: number; day: string } | undefined;
+  const projectName = snapshotProjectName(db, input);
   if (existing) {
+    if (projectName) {
+      db.prepare(`UPDATE usage_records SET project_name = ? WHERE id = ? AND project_name IS NULL`).run(projectName, existing.id);
+    }
     if (total <= existing.total_tokens) return false;
     const cost = costOf(model, existing.day, input);
     db.prepare(
@@ -130,8 +153,8 @@ export function upsertUsageRecord(db: SqliteDb, input: UsageRecordInput): boolea
   db.prepare(
     `INSERT INTO usage_records (run_id, project_id, user, agent_id, model, message_id, ts, day,
        input_tokens, cache_write_5m, cache_write_1h, cache_read, output_tokens, total_tokens,
-       cost_usd, price_effective_from, speed, source)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       cost_usd, price_effective_from, speed, source, project_name)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
   ).run(
     input.runId,
     input.projectId,
@@ -151,6 +174,7 @@ export function upsertUsageRecord(db: SqliteDb, input: UsageRecordInput): boolea
     cost.priceEffectiveFrom,
     input.speed ?? null,
     input.source ?? 'live',
+    projectName,
   );
   return true;
 }
@@ -158,7 +182,10 @@ export function upsertUsageRecord(db: SqliteDb, input: UsageRecordInput): boolea
 export interface UsageRow {
   runId: string;
   projectId: string | null;
+  /** Live name, else the name snapshotted on the record. */
   projectName: string | null;
+  /** The project id no longer exists in the projects table. */
+  projectDeleted: boolean;
   user: string;
   agentId: string;
   model: string;
@@ -187,7 +214,7 @@ export function queryUsageRows(db: SqliteDb, f: UsageRowFilter): UsageRow[] {
   if (f.model) { where.push('r.model = ?'); args.push(normalizeModelId(f.model)); }
   const rows = db
     .prepare(
-      `SELECT r.run_id, r.project_id, p.name AS project_name, r.user, r.agent_id, r.model, r.ts, r.day,
+      `SELECT r.run_id, r.project_id, p.name AS live_name, p.id AS live_id, r.project_name AS snap_name, r.user, r.agent_id, r.model, r.ts, r.day,
               r.input_tokens, r.cache_write_5m, r.cache_write_1h, r.cache_read, r.output_tokens, r.cost_usd
          FROM usage_records r LEFT JOIN projects p ON p.id = r.project_id
         WHERE ${where.join(' AND ')}
@@ -197,7 +224,8 @@ export function queryUsageRows(db: SqliteDb, f: UsageRowFilter): UsageRow[] {
   return rows.map((r) => ({
     runId: r.run_id,
     projectId: r.project_id ?? null,
-    projectName: r.project_name ?? null,
+    projectName: r.live_name ?? r.snap_name ?? null,
+    projectDeleted: !!r.project_id && r.live_id == null,
     user: r.user,
     agentId: r.agent_id,
     model: r.model,

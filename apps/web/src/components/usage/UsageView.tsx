@@ -328,7 +328,7 @@ export function UsageView() {
             />
           </div>
 
-          <div className={`${styles.split} ${projectsExpanded ? styles.splitExpanded : ''}`}>
+          <div className={styles.split}>
             <UsageChart summary={summary} showCompare={showCompare} modelColors={modelColors} />
             <ProjectList
               summary={summary}
@@ -453,8 +453,24 @@ function ProjectList({
 }) {
   const t = useT();
   const total = summary.totals.costUsd;
-  const head = summary.projects.slice(0, PROJECT_ROWS_SHOWN);
-  const rest = summary.projects.slice(PROJECT_ROWS_SHOWN);
+  const cardRef = useRef<HTMLElement>(null);
+  const listRef = useRef<HTMLDivElement>(null);
+  // Expanding must not change the page's length: the card keeps the height it
+  // had with 8 rows, and every project scrolls inside the list.
+  const [frozenHeight, setFrozenHeight] = useState<number | null>(null);
+  const shown = expanded ? summary.projects : summary.projects.slice(0, PROJECT_ROWS_SHOWN);
+  const hasMore = summary.projects.length > PROJECT_ROWS_SHOWN;
+
+  const toggle = () => {
+    if (!expanded) {
+      setFrozenHeight(cardRef.current?.offsetHeight ?? null);
+    } else {
+      setFrozenHeight(null);
+      if (listRef.current) listRef.current.scrollTop = 0;
+    }
+    onToggle();
+  };
+
   const row = (p: UsageSummaryResponse['projects'][number]) => (
     <div key={p.projectId} className={styles.projectRow} data-testid="usage-project-row">
       <span className={styles.projectName}>{projectLabels.get(p.projectId) ? <ProjectName label={projectLabels.get(p.projectId)!} /> : p.projectId}</span>
@@ -469,23 +485,29 @@ function ProjectList({
     </div>
   );
   return (
-    <section className={styles.projects} aria-labelledby="usage-projects-title">
+    <section
+      ref={cardRef}
+      className={styles.projects}
+      style={frozenHeight !== null ? { height: frozenHeight } : undefined}
+      aria-labelledby="usage-projects-title"
+    >
       <h2 id="usage-projects-title" className={styles.cardTitle}>{t('usage.projects')}</h2>
-      <div className={styles.projectRows}>
-        {head.map(row)}
-        {rest.length > 0 ? (
-          <Collapsible id="usage-projects-more" open={expanded}>
-            <div className={styles.projectRows}>{rest.map(row)}</div>
-          </Collapsible>
-        ) : null}
+      <div
+        ref={listRef}
+        id="usage-projects-list"
+        className={`${styles.projectRows} ${expanded ? styles.projectRowsScroll : ''}`}
+        {...(expanded ? { tabIndex: 0, role: 'region', 'aria-label': t('usage.projects') } : {})}
+        data-testid="usage-projects-list"
+      >
+        {shown.map(row)}
       </div>
-      {rest.length > 0 ? (
+      {hasMore ? (
         <button
           type="button"
           className={styles.more}
           aria-expanded={expanded}
-          aria-controls="usage-projects-more"
-          onClick={onToggle}
+          aria-controls="usage-projects-list"
+          onClick={toggle}
           data-testid="usage-projects-toggle"
         >
           {expanded ? t('usage.collapse') : t('usage.showAllProjects', { n: summary.projects.length })}

@@ -289,7 +289,7 @@ describe('UsageView', () => {
     expect(within(people[0]!).getByText('Website Clone · 10/14')).toBeTruthy();
   });
 
-  it('shows the top 8 projects, then expands and collapses the rest', async () => {
+  it('shows the top 8 projects, then lists all of them in a scroll area and collapses back', async () => {
     const many = Array.from({ length: 11 }, (_, i) => ({
       projectId: `p${i}`, projectName: `Project ${i}`, costUsd: 11 - i, runs: 1,
     }));
@@ -298,14 +298,26 @@ describe('UsageView', () => {
     const toggle = await screen.findByTestId('usage-projects-toggle');
     expect(toggle.textContent).toBe('顯示全部 11 個');
     expect(toggle.getAttribute('aria-expanded')).toBe('false');
-    const more = document.getElementById('usage-projects-more')!;
-    expect(more.hasAttribute('inert')).toBe(true);
+    expect(screen.getAllByTestId('usage-project-row')).toHaveLength(8);
+    const list = screen.getByTestId('usage-projects-list');
+    expect(list.getAttribute('tabindex')).toBeNull();
+
     fireEvent.click(toggle);
     expect(toggle.textContent).toBe('收起');
-    expect(more.hasAttribute('inert')).toBe(false);
     expect(screen.getAllByTestId('usage-project-row')).toHaveLength(11);
+    // The expanded list is a focusable, labelled scroll region; the card keeps its height.
+    expect(list.getAttribute('tabindex')).toBe('0');
+    expect(list.getAttribute('role')).toBe('region');
+    expect(list.getAttribute('aria-label')).toBe('各專案用量');
+    expect(list.className).toMatch(/projectRowsScroll/);
+    expect(list.closest('section')!.getAttribute('style') ?? '').toMatch(/height/);
+
+    list.scrollTop = 120;
     fireEvent.click(toggle);
+    expect(list.scrollTop).toBe(0);
     expect(toggle.textContent).toBe('顯示全部 11 個');
+    expect(screen.getAllByTestId('usage-project-row')).toHaveLength(8);
+    expect(list.closest('section')!.getAttribute('style') ?? '').not.toMatch(/height/);
   });
 
   it('has no expand button for 8 projects or fewer', async () => {

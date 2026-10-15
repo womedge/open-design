@@ -232,11 +232,9 @@
   align-items: stretch;
   gap: 16px;
 }
-.splitExpanded {
-  /* Expanded project list grows on its own; the chart keeps its height. */
-  align-items: flex-start;
-}
 .projects {
+  display: flex;
+  flex-direction: column;
   flex: 1 1 0;
   min-width: min(100%, 280px);
   box-sizing: border-box;
@@ -255,6 +253,21 @@
   display: flex;
   flex-direction: column;
   font-size: 13px;
+}
+/* Expanded: all projects scroll here while the card keeps its height. */
+.projectRowsScroll {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+}
+.projectRowsScroll:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+.more {
+  flex: none;
 }
 .projectRow {
   position: relative;

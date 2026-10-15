@@ -1,5 +1,5 @@
-import { useState } from 'react';
 import { Collapsible } from './Collapsible';
+import { useUsageUiState } from './usage-ui-state';
 import type { UsageSummaryResponse } from '@open-design/contracts';
 
 import { useT } from '../../i18n';
@@ -22,7 +22,7 @@ const TOKEN_COLUMNS: Array<{ key: 'input' | 'cacheWrite5m' | 'cacheWrite1h' | 'c
 
 export function UsageDetail({ summary, modelColors }: Props) {
   const t = useT();
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useUsageUiState('detailOpen');
   const priceDates = new Set(summary.prices.map((p) => p.effectiveFrom));
   const singleDate = priceDates.size === 1 ? [...priceDates][0]! : null;
 

@@ -158,7 +158,6 @@
 }
 .stale {
   opacity: 0.45;
-  pointer-events: none;
 }
 
 .kpis {
@@ -256,7 +255,7 @@
 }
 /* Expanded: all projects scroll here while the card keeps its height. */
 .projectRowsScroll {
-  flex: 1 1 0;
+  flex: 1 1 auto;
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -268,6 +267,7 @@
 }
 .more {
   flex: none;
+  margin-top: auto;
 }
 .projectRow {
   position: relative;

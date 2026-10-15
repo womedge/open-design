@@ -1,11 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { USAGE_AUTOMATIC_USER } from '@open-design/contracts';
 import type { UsageQuery, UsageSummaryResponse } from '@open-design/contracts';
 import { Button, Select } from '@open-design/components';
 
 import { useT } from '../../i18n';
 import { Icon } from '../Icon';
-import { Collapsible } from './Collapsible';
+import { useUsageUiState } from './usage-ui-state';
 import { UsageChart } from './UsageChart';
 import { UsageDateRangePicker } from './UsageDateRangePicker';
 import { UsageDetail } from './UsageDetail';
@@ -92,7 +92,7 @@ export function UsageView() {
   const [exportFailed, setExportFailed] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [reload, setReload] = useState(0);
-  const [projectsExpanded, setProjectsExpanded] = useState(false);
+  const [projectsExpanded, setProjectsExpanded] = useUsageUiState('projectsExpanded');
   // Creation dates come from the app's own project list, only to tell apart
   // projects that share a name; the usage API is not involved.
   const [createdAt, setCreatedAt] = useState<ReadonlyMap<string, number>>(new Map());
@@ -453,21 +453,33 @@ function ProjectList({
 }) {
   const t = useT();
   const total = summary.totals.costUsd;
-  const cardRef = useRef<HTMLElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
-  // Expanding must not change the page's length: the card keeps the height it
-  // had with 8 rows, and every project scrolls inside the list.
-  const [frozenHeight, setFrozenHeight] = useState<number | null>(null);
+  // Expanding must not change the page's length: the list is capped at the
+  // height of the first 8 rows and every project scrolls inside it. Measured
+  // from the rows themselves, so it needs no state captured at click time.
+  const [capHeight, setCapHeight] = useState<number | null>(null);
   const shown = expanded ? summary.projects : summary.projects.slice(0, PROJECT_ROWS_SHOWN);
   const hasMore = summary.projects.length > PROJECT_ROWS_SHOWN;
 
+  useLayoutEffect(() => {
+    const list = listRef.current;
+    if (!list) return;
+    const measure = () => {
+      const rows = list.querySelectorAll<HTMLElement>('[data-testid=usage-project-row]');
+      const last = rows[PROJECT_ROWS_SHOWN - 1];
+      if (!last) return;
+      const h = Math.ceil(last.getBoundingClientRect().bottom - list.getBoundingClientRect().top + list.scrollTop);
+      setCapHeight(h > 0 ? h : null);
+    };
+    measure();
+    if (typeof ResizeObserver === 'undefined') return;
+    const ro = new ResizeObserver(measure);
+    ro.observe(list);
+    return () => ro.disconnect();
+  }, [expanded, summary.projects, projectLabels]);
+
   const toggle = () => {
-    if (!expanded) {
-      setFrozenHeight(cardRef.current?.offsetHeight ?? null);
-    } else {
-      setFrozenHeight(null);
-      if (listRef.current) listRef.current.scrollTop = 0;
-    }
+    if (expanded && listRef.current) listRef.current.scrollTop = 0;
     onToggle();
   };
 
@@ -485,18 +497,14 @@ function ProjectList({
     </div>
   );
   return (
-    <section
-      ref={cardRef}
-      className={styles.projects}
-      style={frozenHeight !== null ? { height: frozenHeight } : undefined}
-      aria-labelledby="usage-projects-title"
-    >
+    <section className={styles.projects} aria-labelledby="usage-projects-title">
       <h2 id="usage-projects-title" className={styles.cardTitle}>{t('usage.projects')}</h2>
       <div
         ref={listRef}
         id="usage-projects-list"
         className={`${styles.projectRows} ${expanded ? styles.projectRowsScroll : ''}`}
         {...(expanded ? { tabIndex: 0, role: 'region', 'aria-label': t('usage.projects') } : {})}
+        style={expanded && capHeight !== null ? { maxHeight: capHeight } : undefined}
         data-testid="usage-projects-list"
       >
         {shown.map(row)}

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { USAGE_AUTOMATIC_USER } from '@open-design/contracts';
 import type { UsagePersonRow, UsageSummaryResponse } from '@open-design/contracts';
 
@@ -6,6 +5,7 @@ import { useT } from '../../i18n';
 import { formatShortDay, fromIso } from './usage-dates';
 import { formatInt, formatTokens, formatUsd, modelDisplayName } from './usage-format';
 import { colorOfModel, userInitial } from './usage-model';
+import { useUsageUiState } from './usage-ui-state';
 import { ProjectName } from './ProjectName';
 import type { UsageProjectLabel } from './usage-project-labels';
 import styles from './UsagePeople.module.css';
@@ -18,7 +18,7 @@ interface Props {
 
 export function UsagePeople({ summary, modelColors, projectLabels }: Props) {
   const t = useT();
-  const [openUser, setOpenUser] = useState<string | null>(null);
+  const [openUser, setOpenUser] = useUsageUiState('openUser');
 
   return (
     <section className={styles.card} aria-labelledby="usage-people-title">

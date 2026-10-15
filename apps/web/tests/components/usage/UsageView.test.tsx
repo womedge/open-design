@@ -1,9 +1,12 @@
 // @vitest-environment jsdom
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import type { UsageSummaryResponse } from '@open-design/contracts';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { UsageView } from '../../../src/components/usage/UsageView';
+import { resetUsageUiState } from '../../../src/components/usage/usage-ui-state';
 import { I18nProvider } from '../../../src/i18n';
 
 const zeroTokens = { input: 0, cacheWrite5m: 0, cacheWrite1h: 0, cacheRead: 0, output: 0 };
@@ -74,6 +77,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   cleanup();
+  resetUsageUiState();
   vi.unstubAllGlobals();
 });
 
@@ -310,14 +314,13 @@ describe('UsageView', () => {
     expect(list.getAttribute('role')).toBe('region');
     expect(list.getAttribute('aria-label')).toBe('各專案用量');
     expect(list.className).toMatch(/projectRowsScroll/);
-    expect(list.closest('section')!.getAttribute('style') ?? '').toMatch(/height/);
 
     list.scrollTop = 120;
     fireEvent.click(toggle);
     expect(list.scrollTop).toBe(0);
     expect(toggle.textContent).toBe('顯示全部 11 個');
     expect(screen.getAllByTestId('usage-project-row')).toHaveLength(8);
-    expect(list.closest('section')!.getAttribute('style') ?? '').not.toMatch(/height/);
+    expect(list.getAttribute('style') ?? '').not.toMatch(/max-height/);
   });
 
   it('has no expand button for 8 projects or fewer', async () => {
@@ -366,5 +369,55 @@ describe('UsageView', () => {
     const person = screen.getAllByTestId('usage-person')[0]!;
     fireEvent.click(within(person).getByRole('button'));
     expect(within(person).getByTestId('usage-project-struck').textContent).toBe('Old Site');
+  });
+
+  it('keeps what the user opened across a remount and across refetches with unchanged data', async () => {
+    const many = Array.from({ length: 11 }, (_, i) => ({
+      projectId: `p${i}`, projectName: `Project ${i}`, costUsd: 11 - i, runs: 1,
+    }));
+    const spy = mockFetch((url) => (url.startsWith('/api/usage') ? json(summary({ projects: many })) : json({ projects: [] })));
+    const first = renderView();
+    const toggle = await screen.findByTestId('usage-projects-toggle');
+    fireEvent.click(toggle);
+    fireEvent.click(screen.getByRole('button', { name: '明細' }));
+    fireEvent.click(within(screen.getAllByTestId('usage-person')[0]!).getByRole('button'));
+
+    // Window focus / tab visibility: the page re-reads "today", nothing else.
+    const usageCalls = () => spy.mock.calls.filter((c) => String(c[0]).startsWith('/api/usage')).length;
+    const before = usageCalls();
+    window.dispatchEvent(new Event('focus'));
+    document.dispatchEvent(new Event('visibilitychange'));
+    await Promise.resolve();
+    expect(usageCalls()).toBe(before);
+    expect(screen.getByTestId('usage-projects-toggle').getAttribute('aria-expanded')).toBe('true');
+
+    // The page is torn down and mounted again (e.g. its parent is re-keyed).
+    first.unmount();
+    renderView();
+    const again = await screen.findByTestId('usage-projects-toggle');
+    expect(again.getAttribute('aria-expanded')).toBe('true');
+    expect(screen.getAllByTestId('usage-project-row')).toHaveLength(11);
+    expect(screen.getByRole('button', { name: '明細' }).getAttribute('aria-expanded')).toBe('true');
+    expect(within(screen.getAllByTestId('usage-person')[0]!).getByRole('button').getAttribute('aria-expanded')).toBe('true');
+  });
+
+  it('does not swallow clicks while a refetch is in flight', async () => {
+    let release: (r: Response) => void = () => {};
+    let calls = 0;
+    mockFetch((url) => {
+      if (!url.startsWith('/api/usage')) return json({ projects: [] });
+      if (++calls === 1) return json(summary());
+      return new Promise<Response>((resolve) => { release = resolve; });
+    });
+    renderView();
+    await screen.findByTestId('usage-kpi-cost');
+    fireEvent.change(screen.getByTestId('usage-filter-project'), { target: { value: 'p1' } });
+    const content = (await screen.findByTestId('usage-kpi-cost')).closest('[aria-busy]') as HTMLElement;
+    expect(content.getAttribute('aria-busy')).toBe('true');
+    // The busy look is opacity only; the stylesheet must not disable pointer events on it.
+    const css = readFileSync(resolve(process.cwd(), 'src/components/usage/UsageView.module.css'), 'utf8');
+    const stale = /\.stale\s*\{([^}]*)\}/.exec(css)![1]!;
+    expect(stale).not.toMatch(/pointer-events\s*:\s*none/);
+    release(json(summary()));
   });
 });

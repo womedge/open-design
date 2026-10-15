@@ -168,6 +168,14 @@ const CODEX_SHELL_ENVIRONMENT_INCLUDE_KEYS = [
   'OD_WORKSPACE_ID',
   'OD_WORKSPACE_MEMBER_ID',
   'OD_TASK_INPUT_DIR',
+  // Browser/Node tooling locations (paths only, no credentials). Without them
+  // a tool shell cannot find the host's Chromium or its globally installed
+  // playwright-core, so skills that drive a browser fall back to a bare CDP
+  // adapter or fail to launch at all.
+  'NODE_PATH',
+  'CHROME_PATH',
+  'PUPPETEER_EXECUTABLE_PATH',
+  'OD_BROWSER_EXECUTABLE_PATH',
 ] as const;
 
 export function codexOpenDesignShellEnvironmentArgs(): string[] {

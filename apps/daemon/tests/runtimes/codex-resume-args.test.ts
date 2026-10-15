@@ -124,6 +124,10 @@ describe('codex buildArgs session resume', () => {
     expect(includeOnly).toContain('"OD_WORKSPACE_MEMBER_ID"');
     expect(includeOnly).toContain('"OD_PROJECT_DIR"');
     expect(includeOnly).toContain('"OD_TASK_INPUT_DIR"');
+    expect(includeOnly).toContain('"NODE_PATH"');
+    expect(includeOnly).toContain('"CHROME_PATH"');
+    expect(includeOnly).toContain('"PUPPETEER_EXECUTABLE_PATH"');
+    expect(includeOnly).toContain('"OD_BROWSER_EXECUTABLE_PATH"');
     expect(includeOnly).not.toContain('OPENAI_API_KEY');
     expect(includeOnly).not.toContain('OD_API_TOKEN');
   });

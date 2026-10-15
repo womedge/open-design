@@ -139,7 +139,7 @@ RUN rm -f /tmp/claude-apkindex.tgz && \
 # open-design and cannot apk add, so what they need has to be baked in.
 ARG PLAYWRIGHT_CORE_VERSION=1.63.0
 RUN apk add --no-cache chromium font-noto-cjk font-noto-emoji font-liberation \
-      imagemagick ghostscript ffmpeg py3-pillow py3-numpy py3-fonttools py3-brotli py3-pip opencc zip github-cli && \
+      imagemagick ghostscript ffmpeg py3-pillow py3-numpy py3-beautifulsoup4 py3-fonttools py3-brotli py3-pip opencc zip coreutils github-cli && \
     chromium --version && \
     npm install -g "playwright-core@${PLAYWRIGHT_CORE_VERSION}" && \
     npm cache clean --force
@@ -148,6 +148,12 @@ ENV CHROME_PATH=/usr/bin/chromium \
     PUPPETEER_SKIP_DOWNLOAD=1 \
     PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
     NODE_PATH=/usr/local/lib/node_modules
+# Alpine's /usr/bin/chromium wrapper sources /etc/chromium/*.conf, so every
+# launcher (od-screenshot, the web-clone skill's CDP adapter, the daemon's
+# browser-session broker) gets the flags this container needs: no user
+# namespaces/setuid helper for Chromium's sandbox (it aborts without
+# --no-sandbox), and a 64M /dev/shm.
+RUN printf '%s\n' 'CHROMIUM_FLAGS="$CHROMIUM_FLAGS --no-sandbox --disable-dev-shm-usage"' > /etc/chromium/od.conf
 COPY --chmod=0755 deploy/zeabur/od-screenshot /usr/local/bin/od-screenshot
 COPY --chmod=0755 deploy/zeabur/od-codex-login /usr/local/bin/od-codex-login
 # User-level instructions: Claude Code reads ~/.claude/CLAUDE.md; OpenCode

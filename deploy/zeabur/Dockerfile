@@ -139,7 +139,7 @@ RUN rm -f /tmp/claude-apkindex.tgz && \
 # open-design and cannot apk add, so what they need has to be baked in.
 ARG PLAYWRIGHT_CORE_VERSION=1.63.0
 RUN apk add --no-cache chromium font-noto-cjk font-noto-emoji font-liberation \
-      imagemagick ffmpeg py3-pillow py3-numpy py3-fonttools py3-pip opencc zip github-cli && \
+      imagemagick ghostscript ffmpeg py3-pillow py3-numpy py3-fonttools py3-pip opencc zip github-cli && \
     chromium --version && \
     npm install -g "playwright-core@${PLAYWRIGHT_CORE_VERSION}" && \
     npm cache clean --force

@@ -2602,6 +2602,15 @@ export function EntryNavRail({
               <Icon name="palette" size={16} />
             </NavButton>
             <NavButton
+              active={view === 'usage'}
+              ariaLabel={t('entry.navUsage')}
+              label={t('entry.navUsage')}
+              onClick={() => selectView('usage')}
+              testId="entry-nav-usage"
+            >
+              <Icon name="dashboard" size={16} />
+            </NavButton>
+            <NavButton
               active={view === 'plugins'}
               ariaLabel={t('entry.navPlugins')}
               label={t('entry.navPlugins')}
@@ -2682,6 +2691,15 @@ export function EntryNavRail({
               testId="entry-nav-design-systems"
             >
               <Icon name="palette" size={16} />
+            </NavButton>
+            <NavButton
+              active={view === 'usage'}
+              ariaLabel={t('entry.navUsage')}
+              label={t('entry.navUsage')}
+              onClick={() => selectView('usage')}
+              testId="entry-nav-usage"
+            >
+              <Icon name="dashboard" size={16} />
             </NavButton>
             <NavButton
               active={view === 'plugins'}

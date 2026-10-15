@@ -1,0 +1,345 @@
+/* Date range picker for the usage page. Colors come from the app tokens so the
+   dark theme follows automatically. */
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+.trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  min-width: 280px;
+  max-width: 100%;
+  min-height: 40px;
+  padding: 6px 12px 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xlarge);
+  background: var(--bg);
+  color: var(--text-strong);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 140ms var(--ease-out);
+}
+.trigger:hover {
+  background: var(--bg-subtle);
+}
+.trigger:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+.triggerText {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  min-width: 0;
+}
+.triggerRange {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: 14px;
+  font-weight: 600;
+}
+.calIcon,
+.chevron {
+  flex: none;
+  color: var(--text-soft);
+}
+.chevron {
+  display: inline-flex;
+}
+.triggerCompare {
+  margin-left: 24px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.backdrop {
+  padding: 16px;
+}
+.dialog {
+  width: min(760px, 100%);
+  max-height: 100%;
+  overflow: auto;
+  /* Enter 200ms ease-out; never from scale(0). */
+  animation: usage-dp-in 200ms var(--ease-out);
+}
+@keyframes usage-dp-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.backdrop .dialog .header {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 16px 20px 8px;
+}
+.backdrop .dialog .body {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  gap: 20px 28px;
+  padding: 8px 20px 16px;
+}
+.options {
+  flex: 0 0 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+.group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.groupLabel {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.optionList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.option {
+  border-radius: var(--radius-large);
+  font-size: 13px;
+  transition:
+    background-color 140ms var(--ease-out),
+    transform 200ms var(--ease-out);
+}
+.option:not(.optionOn):hover {
+  transform: translateX(4px);
+}
+.optionOn,
+.optionOn:hover {
+  background: var(--text-strong);
+  color: var(--bg);
+  font-weight: 600;
+}
+.switchRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.switch {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  flex: none;
+  padding: 0;
+  border: 0;
+  border-radius: 12px;
+  background: var(--border);
+  cursor: pointer;
+  transition: background-color 200ms var(--ease-out);
+}
+.switchOn {
+  background: var(--text-strong);
+}
+.thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--bg);
+  transition: transform 200ms var(--ease-out);
+}
+.switchOn .thumb {
+  transform: translateX(20px);
+}
+.switch:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+
+.calendarSide {
+  flex: 1 1 360px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.months {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px 28px;
+}
+.month {
+  flex: 1 1 224px;
+  min-width: 0;
+}
+.monthHead {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 32px;
+  margin-bottom: 6px;
+}
+.monthTitle {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+.nav,
+.navSpacer {
+  width: 32px;
+  height: 32px;
+}
+.nav {
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: var(--radius-large);
+  background: transparent;
+  color: var(--text-strong);
+  opacity: 0.55;
+  cursor: pointer;
+  transition: opacity 140ms var(--ease-out);
+}
+.nav:hover {
+  opacity: 1;
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  row-gap: 2px;
+}
+.weekday {
+  display: grid;
+  place-items: center;
+  height: 28px;
+  font-size: 12px;
+  color: var(--text-soft);
+}
+.day {
+  display: grid;
+  place-items: center;
+  height: 34px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-strong);
+  font-size: 13px;
+  cursor: pointer;
+  transition: background-color 140ms var(--ease-out);
+}
+.day:hover:not(.dayEdge) {
+  background: var(--bg-subtle);
+}
+.dayToday {
+  background: var(--bg-subtle);
+}
+.dayInRange {
+  background: var(--bg-fill-secondary);
+}
+.dayEdge,
+.dayEdge:hover {
+  background: var(--text-strong);
+  color: var(--bg);
+  font-weight: 600;
+  border-radius: var(--radius-large);
+}
+.dayDisabled {
+  color: var(--text-faint);
+  cursor: default;
+}
+
+.summaries {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px 12px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-soft);
+}
+.summaryText {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.rangeChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-large);
+  background: var(--bg);
+  color: var(--text-strong);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.rangeChipOn {
+  border-color: var(--text-strong);
+  box-shadow: 0 0 0 1px var(--text-strong);
+}
+.rangeChipStatic {
+  cursor: default;
+  color: var(--text-muted);
+}
+.backdrop .dialog .footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px 16px;
+  border-top: 1px solid var(--border-soft);
+}
+
+/* Phone: full-screen overlay, a single calendar. */
+@media (max-width: 640px) {
+  .backdrop {
+    padding: 0;
+    align-items: stretch;
+  }
+  .dialog {
+    width: 100%;
+    max-width: 100%;
+    height: 100%;
+    max-height: none;
+    border-radius: 0;
+  }
+  .options {
+    flex-basis: 100%;
+  }
+  .trigger {
+    min-width: 0;
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dialog,
+  .option,
+  .thumb,
+  .switch {
+    animation: none;
+    transition: none;
+  }
+}

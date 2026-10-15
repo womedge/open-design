@@ -1,0 +1,181 @@
+.card {
+  flex: 2 1 0;
+  min-width: min(100%, 480px);
+  box-sizing: border-box;
+  padding: 20px 24px 18px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xlarge);
+  background: var(--bg);
+}
+.head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  margin-bottom: 16px;
+}
+.title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px 14px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.legendItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.swatchLine {
+  width: 14px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--text-strong);
+}
+.swatchDash {
+  width: 14px;
+  border-top: 2px dashed var(--text-muted);
+}
+.swatchBox {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+.legendDivider {
+  width: 1px;
+  height: 12px;
+  background: var(--border);
+}
+/* The chart scrolls inside its own card when the card is narrower than the
+   plot needs; the page itself never scrolls sideways. */
+.scroller {
+  overflow-x: auto;
+  /* Room for the top tick label, which sits half above the plot. */
+  padding-top: 10px;
+}
+.chart {
+  --plot-h: clamp(170px, 26vh, 236px);
+  display: flex;
+  gap: 10px;
+  min-width: 380px;
+}
+.yAxis {
+  position: relative;
+  width: 40px;
+  height: var(--plot-h);
+  flex: none;
+  font-size: 11px;
+  color: var(--text-soft);
+  font-variant-numeric: tabular-nums;
+}
+.yAxis span {
+  position: absolute;
+  right: 0;
+  transform: translateY(50%);
+}
+.plotCol {
+  flex: 1;
+  min-width: 0;
+}
+.plot {
+  position: relative;
+  height: var(--plot-h);
+  border-bottom: 1px solid var(--border);
+}
+.gridLine {
+  position: absolute;
+  left: 0;
+  right: 0;
+  border-top: 1px dashed var(--border-soft);
+}
+.bars {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: stretch;
+  gap: 4px;
+}
+.col {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
+.value {
+  margin-bottom: 4px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-strong);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.stack {
+  width: 100%;
+  max-width: 44px;
+  display: flex;
+  flex-direction: column-reverse;
+  border-radius: 4px 4px 0 0;
+  overflow: hidden;
+  transform-origin: bottom;
+  animation: usage-bar-in 200ms var(--ease-out);
+}
+.seg {
+  flex-basis: 0;
+  min-height: 1px;
+}
+@keyframes usage-bar-in {
+  from {
+    transform: scaleY(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: none;
+    opacity: 1;
+  }
+}
+.cmpLine {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  overflow: visible;
+}
+.cmpLine line {
+  stroke: var(--text-muted);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+  stroke-linecap: round;
+}
+.xAxis {
+  display: grid;
+  column-gap: 4px;
+  margin-top: 8px;
+  font-size: 10.5px;
+  color: var(--text-soft);
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.xLabel {
+  white-space: nowrap;
+  /* A label wider than its column centers on it instead of pushing the grid. */
+  display: flex;
+  justify-content: center;
+  overflow: visible;
+}
+@media (prefers-reduced-motion: reduce) {
+  .stack {
+    animation: none;
+  }
+}

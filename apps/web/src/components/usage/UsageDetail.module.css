@@ -1,0 +1,128 @@
+.section {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xlarge);
+  background: var(--bg);
+}
+.heading {
+  margin: 0;
+}
+.toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  min-height: 52px;
+  padding: 0 24px;
+  border: 0;
+  border-radius: var(--radius-2xlarge);
+  background: transparent;
+  color: var(--text-strong);
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.toggle:focus-visible {
+  outline: 2px solid var(--blue);
+  outline-offset: 2px;
+}
+.chev {
+  color: var(--text-soft);
+  transition: transform 200ms var(--ease-out);
+}
+.chevOpen {
+  transform: rotate(180deg);
+}
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 4px 24px 20px;
+}
+.block {
+  min-width: 0;
+}
+.blockHead {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px 12px;
+}
+.blockTitle {
+  margin: 0 0 8px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+.unit,
+.since {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-soft);
+  font-variant-numeric: tabular-nums;
+}
+.tableWrap {
+  overflow-x: auto;
+}
+.table {
+  width: 100%;
+  min-width: 560px;
+  border-collapse: collapse;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+.table th,
+.table td {
+  padding: 8px 10px;
+  border-top: 1px solid var(--border-soft);
+  text-align: right;
+  white-space: nowrap;
+  color: var(--text-strong);
+}
+.table thead th {
+  border-top: 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  white-space: normal;
+}
+.table th:first-child {
+  text-align: left;
+}
+.table tbody th {
+  font-weight: 600;
+}
+.modelName {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.modelMeta {
+  display: block;
+  font-size: 11.5px;
+  font-weight: 500;
+  color: var(--text-soft);
+}
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+.totalRow th,
+.totalRow td {
+  font-weight: 700;
+  border-top: 1px solid var(--border);
+}
+@media (max-width: 640px) {
+  .toggle {
+    padding: 0 16px;
+  }
+  .body {
+    padding: 4px 16px 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .chev {
+    transition: none;
+  }
+}

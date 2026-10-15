@@ -1,0 +1,323 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: 4px 0 56px;
+  box-sizing: border-box;
+  min-width: 0;
+  font-variant-numeric: tabular-nums;
+}
+.header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.heading {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--text-strong);
+}
+
+/* Filter row. 匯出 sits at the right end; below 1024px it drops to its own
+   line, still right-aligned. */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin-top: -8px;
+}
+.filter {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  box-sizing: border-box;
+  min-height: 32px;
+  padding: 0 4px 0 10px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-large);
+  background: var(--bg);
+}
+.filterLabel {
+  font-size: 11.5px;
+  color: var(--text-soft);
+  white-space: nowrap;
+}
+.filterSelect {
+  min-width: 0;
+  max-width: 100%;
+  border: 0;
+  background-color: transparent;
+  box-shadow: none;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-strong);
+  cursor: pointer;
+}
+.exportArea {
+  margin-left: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 6px 10px;
+}
+.exportButton {
+  gap: 8px;
+  font-weight: 600;
+}
+.exportError {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  min-height: 32px;
+  padding: 0 4px 0 12px;
+  border-radius: var(--radius-xlarge);
+  background: var(--red-bg);
+  color: var(--red);
+  font-size: 13px;
+  font-weight: 600;
+  animation: usage-fade-in 200ms var(--ease-out);
+}
+.retry {
+  min-height: 26px;
+  padding: 0 12px;
+  border: 1px solid currentColor;
+  border-radius: var(--radius-large);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  white-space: nowrap;
+}
+@keyframes usage-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@media (max-width: 1023px) {
+  .exportArea {
+    flex-basis: 100%;
+  }
+}
+@media (max-width: 640px) {
+  .filter {
+    flex: 1 1 calc(50% - 3px);
+    min-width: 0;
+  }
+  .filterSelect {
+    flex: 1;
+    min-width: 0;
+    text-overflow: ellipsis;
+  }
+  .exportArea {
+    flex-direction: column-reverse;
+    align-items: flex-end;
+  }
+}
+
+.empty {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 10px;
+  min-height: 200px;
+  padding: 24px;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-2xlarge);
+  background: repeating-linear-gradient(135deg, var(--bg-fill-tertiary) 0 6px, transparent 6px 12px);
+  color: var(--text-muted);
+  font-size: 15px;
+  font-weight: 600;
+  text-align: center;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  transition: opacity 140ms var(--ease-out);
+}
+.empty {
+  transition: opacity 140ms var(--ease-out);
+}
+.stale {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 16px;
+}
+.kpi {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+  padding: 16px 20px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xlarge);
+  background: var(--bg);
+}
+.kpiLabel {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.kpiValue {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  font-size: 30px;
+  font-weight: 700;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: var(--text-strong);
+}
+.kpiUnit {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0;
+  color: var(--text-muted);
+}
+.note {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--red);
+  overflow-wrap: anywhere;
+}
+.delta {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+.deltaWarn {
+  color: var(--red);
+}
+.deltaGood {
+  color: var(--green);
+}
+.deltaLabel {
+  margin-left: 2px;
+  font-weight: 500;
+  color: var(--text-muted);
+  white-space: nowrap;
+}
+
+.split {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: stretch;
+  gap: 16px;
+}
+.projects {
+  flex: 1 1 0;
+  min-width: min(100%, 280px);
+  box-sizing: border-box;
+  padding: 16px 20px 8px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-2xlarge);
+  background: var(--bg);
+}
+.cardTitle {
+  margin: 0 0 6px;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-strong);
+}
+.projectRows {
+  display: flex;
+  flex-direction: column;
+  font-size: 13px;
+}
+.projectRow {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 4px 12px;
+  padding: 9px 0;
+  border-top: 1px solid var(--border-soft);
+}
+.projectName {
+  font-weight: 600;
+  color: var(--text-strong);
+  overflow-wrap: anywhere;
+}
+.projectFigures {
+  text-align: right;
+  white-space: nowrap;
+}
+.projectCost {
+  font-weight: 600;
+  color: var(--text-strong);
+}
+.projectShare,
+.projectRuns {
+  font-size: 12px;
+  color: var(--text-soft);
+}
+.projectBar {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.track {
+  flex: 1;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--bg-subtle);
+}
+.fill {
+  display: block;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--text-strong);
+}
+.projectRuns {
+  white-space: nowrap;
+}
+
+.footnote {
+  margin: 0;
+  font-size: 12px;
+  color: var(--text-soft);
+}
+
+@media (max-width: 640px) {
+  .heading {
+    font-size: 22px;
+  }
+  .kpi {
+    padding: 14px 16px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .content,
+  .exportError {
+    transition: none;
+    animation: none;
+  }
+}

@@ -20,6 +20,8 @@ export type EntryHomeView =
   | 'library'
   | 'brands'
   | 'integrations'
+  // AWP+ token usage statistics (cost / tokens / runs by project and person).
+  | 'usage'
   // Team-edition navigation-shell destinations. `community` is the shared
   // template gallery surfaced as a rail destination (rather than only a home
   // sub-section); the rest are team-workspace slots (project spaces + members +
@@ -134,6 +136,9 @@ export function parseRoute(pathname: string): Route {
   if (parts[0] === 'integrations') {
     return { kind: 'home', view: 'integrations' };
   }
+  if (parts[0] === 'usage' && !parts[1]) {
+    return { kind: 'home', view: 'usage' };
+  }
   if (parts[0] === 'settings') {
     return { kind: 'home', view: 'settings' };
   }
@@ -186,6 +191,7 @@ export function buildPath(route: Route): string {
       return route.brandId ? `/brands/${encodeURIComponent(route.brandId)}` : '/brands';
     }
     if (route.view === 'integrations') return '/integrations';
+    if (route.view === 'usage') return '/usage';
     if (route.view === 'community') return '/community';
     if (route.view === 'drafts') return '/drafts';
     if (route.view === 'all-projects') return '/all-projects';

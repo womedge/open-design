@@ -8,6 +8,7 @@
 // can be rebased without touching this file. `EntryView` becomes a
 // thin wrapper that passes data and callbacks through to this shell.
 
+import { UsageView } from './usage/UsageView';
 import {
   useCallback,
   useEffect,
@@ -1994,6 +1995,11 @@ export function EntryShell({
                 onDesignSystemsRefresh={onDesignSystemsRefresh}
               />
             </div>
+            {view === 'usage' ? (
+              <div data-testid="entry-view-usage">
+                <UsageView />
+              </div>
+            ) : null}
             {view === 'integrations' ? (
               <IntegrationsView
                 config={config}

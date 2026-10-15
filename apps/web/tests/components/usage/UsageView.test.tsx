@@ -158,7 +158,7 @@ describe('UsageView', () => {
     const spy = mockFetch(() => json(summary()));
     renderView();
     await screen.findByTestId('usage-kpi-cost');
-    const first = new URL(String(spy.mock.calls[0]![0]), 'http://x');
+    const first = new URL(String(spy.mock.calls.find((c) => String(c[0]).startsWith('/api/usage'))![0]), 'http://x');
     expect(first.pathname).toBe('/api/usage/summary');
     expect(first.searchParams.get('compareFrom')).not.toBeNull();
     expect(first.searchParams.get('projectId')).toBeNull();
@@ -234,7 +234,10 @@ describe('UsageView', () => {
 
   it('does not show the previous period when a refetch fails', async () => {
     let calls = 0;
-    mockFetch(() => (++calls === 1 ? json(summary()) : new Response('', { status: 500 })));
+    mockFetch((url) => {
+      if (!url.startsWith('/api/usage')) return json({ projects: [] });
+      return ++calls === 1 ? json(summary()) : new Response('', { status: 500 });
+    });
     renderView();
     await screen.findByTestId('usage-kpi-cost');
     fireEvent.change(screen.getByTestId('usage-filter-project'), { target: { value: 'p1' } });
@@ -252,5 +255,37 @@ describe('UsageView', () => {
     expect(body.hasAttribute('inert')).toBe(true);
     fireEvent.click(toggle);
     expect(body.hasAttribute('inert')).toBe(false);
+  });
+
+  it('tells apart same-named projects by creation date, in rows, filter and drill-down', async () => {
+    const base = summary();
+    mockFetch((url) => {
+      if (url === '/api/projects') {
+        return json({
+          projects: [
+            { id: 'p1', name: 'Website Clone', createdAt: Date.parse('2026-10-13T16:30:00Z') },
+            { id: 'p2', name: 'Website Clone', createdAt: Date.parse('2026-10-20T01:00:00Z') },
+          ],
+        });
+      }
+      return json(summary({
+        projects: [
+          { projectId: 'p1', projectName: 'Website Clone', costUsd: 30, runs: 40 },
+          { projectId: 'p2', projectName: 'Website Clone', costUsd: 20, runs: 25 },
+          { projectId: 'p3', projectName: null, costUsd: 0.86, runs: 1 },
+        ],
+        people: base.people,
+      }));
+    });
+    renderView();
+    const rows = await screen.findAllByTestId('usage-project-row');
+    await waitFor(() => expect(rows.map((r) => r.textContent).join()).toContain('Website Clone · 10/14'));
+    expect(rows[1]!.textContent).toContain('Website Clone · 10/20');
+    expect(rows[2]!.textContent).toContain('已刪除專案');
+    const select = screen.getByTestId('usage-filter-project') as HTMLSelectElement;
+    expect([...select.options].map((o) => o.textContent)).toContain('Website Clone · 10/20');
+    const people = screen.getAllByTestId('usage-person');
+    fireEvent.click(within(people[0]!).getByRole('button'));
+    expect(within(people[0]!).getByText('Website Clone · 10/14')).toBeTruthy();
   });
 });

@@ -29,6 +29,8 @@ import {
   type Delta,
 } from './usage-format';
 import { USAGE_NO_PROJECT_ID, buildModelColors, projectLabel } from './usage-model';
+import { buildProjectLabels } from './usage-project-labels';
+import { listProjects } from '../../state/projects';
 import styles from './UsageView.module.css';
 
 interface Filters {
@@ -80,6 +82,20 @@ export function UsageView() {
   const [exportFailed, setExportFailed] = useState(false);
   const [exporting, setExporting] = useState(false);
   const [reload, setReload] = useState(0);
+  // Creation dates come from the app's own project list, only to tell apart
+  // projects that share a name; the usage API is not involved.
+  const [createdAt, setCreatedAt] = useState<ReadonlyMap<string, number>>(new Map());
+  useEffect(() => {
+    let alive = true;
+    listProjects()
+      .then((list) => {
+        if (alive) setCreatedAt(new Map(list.map((p) => [p.id, p.createdAt])));
+      })
+      .catch(() => {});
+    return () => {
+      alive = false;
+    };
+  }, []);
 
   // A page left open across Taipei midnight: re-read the day whenever the user
   // comes back to it (and once a minute), and carry preset ranges forward.
@@ -155,6 +171,16 @@ export function UsageView() {
   const setFilter = (key: keyof Filters) => (value: string) =>
     setFilters((f) => ({ ...f, [key]: value }));
 
+  const projectLabels = useMemo(() => {
+    const known = new Map(options.projects);
+    for (const p of summary?.projects ?? []) known.set(p.projectId, p.projectName);
+    return buildProjectLabels(
+      [...known].map(([id, name]) => ({ id, name })),
+      createdAt,
+      t,
+    );
+  }, [options.projects, summary, createdAt, t]);
+
   const modelColors = useMemo(() => buildModelColors(summary?.models ?? []), [summary]);
 
   const showCompare = range.cmpOn && summary?.compareTotals != null;
@@ -181,7 +207,7 @@ export function UsageView() {
           options={[
             ...[...options.projects]
               .filter(([id]) => id !== USAGE_NO_PROJECT_ID)
-              .map(([id, name]) => ({ value: id, label: projectLabel(id, name, t) })),
+              .map(([id, name]) => ({ value: id, label: projectLabels.get(id) ?? projectLabel(id, name, t) })),
             { value: USAGE_NO_PROJECT_ID, label: t('usage.noProject') },
           ]}
         />
@@ -288,10 +314,10 @@ export function UsageView() {
 
           <div className={styles.split}>
             <UsageChart summary={summary} showCompare={showCompare} modelColors={modelColors} />
-            <ProjectList summary={summary} />
+            <ProjectList summary={summary} projectLabels={projectLabels} />
           </div>
 
-          <UsagePeople summary={summary} modelColors={modelColors} />
+          <UsagePeople summary={summary} modelColors={modelColors} projectLabels={projectLabels} />
           <UsageDetail summary={summary} modelColors={modelColors} />
           <p className={styles.footnote}>{t('usage.footnote')}</p>
         </div>
@@ -391,7 +417,13 @@ function Kpi({
   );
 }
 
-function ProjectList({ summary }: { summary: UsageSummaryResponse }) {
+function ProjectList({
+  summary,
+  projectLabels,
+}: {
+  summary: UsageSummaryResponse;
+  projectLabels: ReadonlyMap<string, string>;
+}) {
   const t = useT();
   const total = summary.totals.costUsd;
   return (
@@ -400,7 +432,7 @@ function ProjectList({ summary }: { summary: UsageSummaryResponse }) {
       <div className={styles.projectRows}>
         {summary.projects.map((p) => (
           <div key={p.projectId} className={styles.projectRow} data-testid="usage-project-row">
-            <span className={styles.projectName}>{projectLabel(p.projectId, p.projectName, t)}</span>
+            <span className={styles.projectName}>{projectLabels.get(p.projectId) ?? projectLabel(p.projectId, p.projectName, t)}</span>
             <span className={styles.projectFigures}>
               <span className={styles.projectCost}>{formatUsd(p.costUsd)}</span>{' '}
               <span className={styles.projectShare}>{formatShare(p.costUsd, total)}</span>

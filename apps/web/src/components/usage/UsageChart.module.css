@@ -1,4 +1,6 @@
 .card {
+  display: flex;
+  flex-direction: column;
   flex: 2 1 0;
   min-width: min(100%, 480px);
   box-sizing: border-box;
@@ -58,12 +60,16 @@
 /* The chart scrolls inside its own card when the card is narrower than the
    plot needs; the page itself never scrolls sideways. */
 .scroller {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   overflow-x: auto;
   /* Room for the top tick label, which sits half above the plot. */
   padding-top: 10px;
 }
 .chart {
   --plot-h: clamp(170px, 26vh, 236px);
+  flex: 1;
   display: flex;
   gap: 10px;
   min-width: 380px;
@@ -71,7 +77,8 @@
 .yAxis {
   position: relative;
   width: 40px;
-  height: var(--plot-h);
+  /* Same height as the plot: stretches with it, minus the x-axis row below. */
+  margin-bottom: 24px;
   flex: none;
   font-size: 11px;
   color: var(--text-soft);
@@ -85,10 +92,13 @@
 .plotCol {
   flex: 1;
   min-width: 0;
+  display: flex;
+  flex-direction: column;
 }
 .plot {
   position: relative;
-  height: var(--plot-h);
+  flex: 1;
+  min-height: var(--plot-h);
   border-bottom: 1px solid var(--border);
 }
 .gridLine {
@@ -161,6 +171,7 @@
 .xAxis {
   display: grid;
   column-gap: 4px;
+  height: 16px;
   margin-top: 8px;
   font-size: 10.5px;
   color: var(--text-soft);

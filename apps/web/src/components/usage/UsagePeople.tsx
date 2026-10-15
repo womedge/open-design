@@ -11,14 +11,13 @@ import styles from './UsagePeople.module.css';
 interface Props {
   summary: UsageSummaryResponse;
   modelColors: Map<string, string>;
+  projectLabels: ReadonlyMap<string, string>;
 }
 
-export function UsagePeople({ summary, modelColors }: Props) {
+export function UsagePeople({ summary, modelColors, projectLabels }: Props) {
   const t = useT();
   const [openUser, setOpenUser] = useState<string | null>(null);
-  const projectNames = new Map(
-    summary.projects.map((p) => [p.projectId, projectLabel(p.projectId, p.projectName, t)]),
-  );
+  const projectNames = projectLabels;
 
   return (
     <section className={styles.card} aria-labelledby="usage-people-title">
@@ -77,7 +76,7 @@ function PersonDetail({
   modelColors,
 }: {
   person: UsagePersonRow;
-  projectNames: Map<string, string>;
+  projectNames: ReadonlyMap<string, string>;
   modelColors: Map<string, string>;
 }) {
   const t = useT();

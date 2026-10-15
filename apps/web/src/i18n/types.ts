@@ -1618,6 +1618,7 @@ export interface Dict {
   'recentProjects.selfCreator': string;
   'recentProjects.teamMemberCreator': string;
   'recentProjects.ownOnlyMutation': string;
+  'workspaceTabs.dockNoOpenProjects': string;
   'recentProjects.shareInProgress': string;
   'recentProjects.duplicateInProgress': string;
   'recentProjects.sharedInTeam': string;

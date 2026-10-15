@@ -1262,6 +1262,7 @@ export const ko: Dict = {
   'recentProjects.selfCreator': 'Me',
   'recentProjects.teamMemberCreator': 'Team member',
   'recentProjects.ownOnlyMutation': 'Only projects you created can be changed or deleted.',
+  'workspaceTabs.dockNoOpenProjects': '열려 있는 프로젝트가 없습니다',
   'recentProjects.shareInProgress': 'Sharing…',
   'recentProjects.duplicateInProgress': '복제 중…',
   'recentProjects.sharedInTeam': 'In team space',

@@ -1262,6 +1262,7 @@ export const id: Dict = {
   'recentProjects.selfCreator': 'Me',
   'recentProjects.teamMemberCreator': 'Team member',
   'recentProjects.ownOnlyMutation': 'Only projects you created can be changed or deleted.',
+  'workspaceTabs.dockNoOpenProjects': 'Tidak ada proyek yang terbuka',
   'recentProjects.shareInProgress': 'Sharing…',
   'recentProjects.duplicateInProgress': 'Menduplikasi…',
   'recentProjects.sharedInTeam': 'In team space',

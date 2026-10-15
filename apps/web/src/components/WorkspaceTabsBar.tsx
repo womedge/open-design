@@ -2167,6 +2167,14 @@ export function WorkspaceTabsBar({
               role="listbox"
               onMouseLeave={clearPreview}
             >
+              {projectTabs.length === 0 ? (
+                <div
+                  className="workspace-tabs-dropdown__empty"
+                  data-testid="workspace-tabs-dropdown-empty"
+                >
+                  {t('workspaceTabs.dockNoOpenProjects')}
+                </div>
+              ) : null}
               {projectTabs.map((tab) => {
                 const display =
                   displayTabById.get(tab.id)

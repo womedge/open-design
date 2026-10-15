@@ -1070,6 +1070,12 @@
   inset: 0;
   z-index: 59;
 }
+.workspace-tabs-dropdown__empty {
+  padding: 8px 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
 .workspace-tabs-dropdown__menu {
   position: absolute;
   z-index: 60;

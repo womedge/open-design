@@ -24,6 +24,10 @@ export interface TabIdentityScopeInputs {
   /** App.tsx's merged AMR login status, or `null` before the first read
    *  completes. */
   amrLoginStatus: TabScopeLoginStatus | null;
+  /** True once the status endpoint has answered `amr-runtime-unavailable`
+   *  (a build without the vela CLI). No status will ever arrive, so a null
+   *  `amrLoginStatus` then means "signed out", not "not resolved yet". */
+  amrRuntimeUnavailable?: boolean;
   /** The shell's current workspace context, or `null` when signed out /
    *  offline / B unavailable (the three are indistinguishable at this read —
    *  see `nextWorkspaceBucket` below for how that ambiguity is handled). */
@@ -120,12 +124,14 @@ export function deriveTabIdentityScope(
   inputs: TabIdentityScopeInputs,
 ): TabIdentityScopeResult {
   const {
-    amrLoginStatus,
     workspaceContext,
     workspaceContextLoading,
     previousWorkspaceBucket,
     previousAccountBucket,
   } = inputs;
+  const amrLoginStatus: TabScopeLoginStatus | null =
+    inputs.amrLoginStatus
+    ?? (inputs.amrRuntimeUnavailable ? { loggedIn: false, profile: '', user: null } : null);
 
   if (amrLoginStatus === null) {
     return {

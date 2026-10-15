@@ -1262,6 +1262,7 @@ export const de: Dict = {
   'recentProjects.selfCreator': 'Me',
   'recentProjects.teamMemberCreator': 'Team member',
   'recentProjects.ownOnlyMutation': 'Only projects you created can be changed or deleted.',
+  'workspaceTabs.dockNoOpenProjects': 'Keine geöffneten Projekte',
   'recentProjects.shareInProgress': 'Sharing…',
   'recentProjects.duplicateInProgress': 'Wird dupliziert…',
   'recentProjects.sharedInTeam': 'In team space',

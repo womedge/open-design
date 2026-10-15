@@ -121,6 +121,7 @@ import {
   fetchVelaLoginStatus,
   listProjectRunsWithScope,
   type VelaLoginStatus,
+  isAmrRuntimeUnavailable,
 } from './providers/daemon';
 import {
   AMR_LOGIN_STATUS_EVENT,
@@ -1753,6 +1754,7 @@ function AppInner() {
   // globals effect below reads it; the sync effects live next to the
   // other AMR plumbing further down.
   const [amrLoginStatus, setAmrLoginStatus] = useState<VelaLoginStatus | null>(null);
+  const [amrRuntimeUnavailable, setAmrRuntimeUnavailable] = useState(false);
   // Inline AMR auth can invalidate the caller identity and intentionally tear
   // down ProjectView before the login poll reports success. Keep only the
   // exact failed-turn continuation above that authorization lifetime; the
@@ -1891,6 +1893,7 @@ function AppInner() {
     nextAccountBucket: nextTabScopeAccountId,
   } = deriveTabIdentityScope({
     amrLoginStatus,
+    amrRuntimeUnavailable,
     workspaceContext,
     workspaceContextLoading,
     previousWorkspaceBucket: tabScopeWorkspaceIdRef.current,
@@ -2051,7 +2054,12 @@ function AppInner() {
       restartOnSignIn = false,
     ) => {
       const status = await fetchVelaLoginStatus(options);
+      if (!cancelled && !status) {
+        const unavailable = await isAmrRuntimeUnavailable();
+        if (!cancelled) setAmrRuntimeUnavailable(unavailable);
+      }
       if (!cancelled && status) {
+        setAmrRuntimeUnavailable(false);
         applyAmrLoginStatus(status, {
           forceModelRefresh: options.refresh === true,
           restartOnSignIn,

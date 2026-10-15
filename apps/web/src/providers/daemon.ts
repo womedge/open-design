@@ -1401,6 +1401,24 @@ export async function fetchVelaLoginStatus(options: { refresh?: boolean } = {}):
   }
 }
 
+/**
+ * True when the daemon reports the AMR runtime missing (`503
+ * amr-runtime-unavailable`, e.g. a build without the vela CLI). Shares the
+ * coalesced status read, so it costs no extra request beside `fetchVelaLoginStatus`.
+ */
+export async function isAmrRuntimeUnavailable(): Promise<boolean> {
+  try {
+    const read = await readVelaLoginStatus();
+    return (
+      !read.ok
+      && read.httpStatus === 503
+      && (read.body as { error?: unknown } | null)?.error === 'amr-runtime-unavailable'
+    );
+  } catch {
+    return false;
+  }
+}
+
 export async function fetchAmrWalletSnapshot(options: { refresh?: boolean } = {}): Promise<AmrWalletSnapshot | null> {
   try {
     const query = options.refresh ? '?refresh=1' : '';

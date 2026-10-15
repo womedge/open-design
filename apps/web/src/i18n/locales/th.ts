@@ -1262,6 +1262,7 @@ export const th: Dict = {
   'recentProjects.selfCreator': 'Me',
   'recentProjects.teamMemberCreator': 'Team member',
   'recentProjects.ownOnlyMutation': 'Only projects you created can be changed or deleted.',
+  'workspaceTabs.dockNoOpenProjects': 'ไม่มีโปรเจกต์ที่เปิดอยู่',
   'recentProjects.shareInProgress': 'Sharing…',
   'recentProjects.duplicateInProgress': 'กำลังทำสำเนา…',
   'recentProjects.sharedInTeam': 'In team space',

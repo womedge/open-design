@@ -1262,6 +1262,7 @@ export const hu: Dict = {
   'recentProjects.selfCreator': 'Me',
   'recentProjects.teamMemberCreator': 'Team member',
   'recentProjects.ownOnlyMutation': 'Only projects you created can be changed or deleted.',
+  'workspaceTabs.dockNoOpenProjects': 'Nincs megnyitott projekt',
   'recentProjects.shareInProgress': 'Sharing…',
   'recentProjects.duplicateInProgress': 'Másolás…',
   'recentProjects.sharedInTeam': 'In team space',

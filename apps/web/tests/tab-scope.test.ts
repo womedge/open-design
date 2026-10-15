@@ -231,4 +231,28 @@ describe('deriveTabIdentityScope', () => {
       expect(tick2.scopeKey).toBe('user-1::ws-team-a');
     });
   });
+  describe('AMR runtime unavailable (builds that ship without the vela CLI)', () => {
+    it('resolves to the signed-out scope instead of staying unresolved forever', () => {
+      // `/api/integrations/vela/status` answers 503 `amr-runtime-unavailable`
+      // there, so `amrLoginStatus` never leaves null. A permanently-null scope
+      // key stops WorkspaceTabsBar from ever syncing tabs to the route: a
+      // project opened from the sidebar then leaves the entry tab active and
+      // the tab list empty.
+      const result = derive({
+        amrLoginStatus: null,
+        amrRuntimeUnavailable: true,
+        workspaceContext: null,
+      });
+      expect(result.scopeKey).toBe('anon::none');
+    });
+
+    it('still defers while the status read is genuinely pending', () => {
+      const result = derive({
+        amrLoginStatus: null,
+        amrRuntimeUnavailable: false,
+        workspaceContext: null,
+      });
+      expect(result.scopeKey).toBeNull();
+    });
+  });
 });

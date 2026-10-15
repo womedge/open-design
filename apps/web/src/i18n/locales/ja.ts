@@ -1262,6 +1262,7 @@ export const ja: Dict = {
   'recentProjects.selfCreator': 'Me',
   'recentProjects.teamMemberCreator': 'Team member',
   'recentProjects.ownOnlyMutation': 'Only projects you created can be changed or deleted.',
+  'workspaceTabs.dockNoOpenProjects': '開いているプロジェクトはありません',
   'recentProjects.shareInProgress': 'Sharing…',
   'recentProjects.duplicateInProgress': '複製中…',
   'recentProjects.sharedInTeam': 'In team space',

@@ -143,6 +143,12 @@ describe('UsageView', () => {
     fireEvent.click(toggle);
     expect(toggle.getAttribute('aria-expanded')).toBe('true');
     expect(screen.getByText('每 100 萬 token，USD')).toBeTruthy();
+    // 各模型用量: full integers, no 萬/億, totals row included.
+    const modelTable = screen.getAllByRole('table')[0]!;
+    expect(within(modelTable).getAllByText('10,000,000').length).toBeGreaterThan(1);
+    expect(within(modelTable).getAllByText('5,000,000').length).toBeGreaterThan(1);
+    expect(within(modelTable).getAllByText('0').length).toBeGreaterThan(0);
+    expect(modelTable.textContent).not.toMatch(/萬|億/);
     expect(screen.getByText('自 2026-10-01 起')).toBeTruthy();
   });
 

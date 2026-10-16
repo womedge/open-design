@@ -3,7 +3,7 @@ import { useUsageUiState } from './usage-ui-state';
 import type { UsageSummaryResponse } from '@open-design/contracts';
 
 import { useT } from '../../i18n';
-import { agentDisplayName, formatInt, formatPrice, formatTokens, formatUsd, modelDisplayName } from './usage-format';
+import { agentDisplayName, formatInt, formatPrice, formatUsd, modelDisplayName } from './usage-format';
 import { colorOfModel, type TKey } from './usage-model';
 import styles from './UsageDetail.module.css';
 
@@ -70,7 +70,7 @@ export function UsageDetail({ summary, modelColors }: Props) {
                           </span>
                         </th>
                         {TOKEN_COLUMNS.map((c) => (
-                          <td key={c.key}>{formatTokens(m.tokens[c.key])}</td>
+                          <td key={c.key}>{formatInt(m.tokens[c.key])}</td>
                         ))}
                         <td>{formatUsd(m.costUsd)}</td>
                       </tr>
@@ -78,7 +78,7 @@ export function UsageDetail({ summary, modelColors }: Props) {
                     <tr className={styles.totalRow}>
                       <th scope="row">{t('usage.total')}</th>
                       {TOKEN_COLUMNS.map((c) => (
-                        <td key={c.key}>{formatTokens(summary.modelTokenTotals[c.key])}</td>
+                        <td key={c.key}>{formatInt(summary.modelTokenTotals[c.key])}</td>
                       ))}
                       <td />
                     </tr>

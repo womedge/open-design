@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   computeDelta,
+  formatInt,
   formatPrice,
   formatShare,
   formatTokens,
@@ -69,5 +70,15 @@ describe('modelDisplayName', () => {
     expect(modelDisplayName('claude-sonnet-4-5-20250929')).toBe('Claude Sonnet 4.5');
     expect(modelDisplayName('gpt-5.5')).toBe('GPT-5.5');
     expect(modelDisplayName('mystery')).toBe('mystery');
+  });
+});
+
+describe('formatInt (明細 token cells)', () => {
+  it('prints full integers with thousands separators and no 萬/億', () => {
+    expect(formatInt(0)).toBe('0');
+    expect(formatInt(6)).toBe('6');
+    expect(formatInt(1_739)).toBe('1,739');
+    expect(formatInt(57_000)).toBe('57,000');
+    expect(formatInt(110_345_678)).toBe('110,345,678');
   });
 });

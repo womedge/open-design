@@ -885,6 +885,8 @@ export function WorkspaceTabsBar({
   const pendingScopeRouteRef = useRef<{
     scopeKey: string;
     path: string;
+    /** The outgoing URL the guard rejects; any other route is a real navigation. */
+    fromPath: string;
   } | null>(null);
   const stateRef = useRef(state);
   stateRef.current = state;
@@ -1369,7 +1371,11 @@ export function WorkspaceTabsBar({
       // React StrictMode replays mount effects without remounting refs. Keep
       // rejecting the outgoing workspace URL until the router commits the
       // route selected for the incoming scope.
-      if (pendingScopeRoute.path !== buildPath(route)) return;
+      // Only the outgoing URL is rejected. A route that is neither the
+      // outgoing nor the expected one means the router went elsewhere, and a
+      // guard left armed would drop every later route and strand the entry tab.
+      const currentPath = buildPath(route);
+      if (pendingScopeRoute.path !== currentPath && pendingScopeRoute.fromPath === currentPath) return;
       pendingScopeRouteRef.current = null;
     }
     if (
@@ -1577,7 +1583,7 @@ export function WorkspaceTabsBar({
     const nextPath = buildPath(nextRoute);
     pendingScopeRouteRef.current = buildPath(route) === nextPath
       ? null
-      : { scopeKey: identityScopeKey, path: nextPath };
+      : { scopeKey: identityScopeKey, path: nextPath, fromPath: buildPath(route) };
     navigate(nextRoute);
   }, [
     activeProjectWorkspaceId,
